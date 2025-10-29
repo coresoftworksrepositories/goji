@@ -1,0 +1,427 @@
+/* Sprint-specific styles */
+
+/* Sprint View Styles */
+.sprints-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.sprints-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.sprint-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1.5rem;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.sprint-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.sprint-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.sprint-title {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sprint-title h3 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 1.25rem;
+}
+
+.sprint-status {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.sprint-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.sprint-goal {
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  background: var(--bg-secondary);
+  border-radius: 6px;
+  border-left: 3px solid var(--primary-color);
+  font-style: italic;
+}
+
+.sprint-dates {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.date-info {
+  text-align: center;
+  padding: 0.5rem;
+  background: var(--bg-secondary);
+  border-radius: 6px;
+  font-size: 0.875rem;
+}
+
+.sprint-stats {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-bottom: 1rem;
+}
+
+.sprint-meta {
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-color);
+}
+
+/* Sprint Detail View Styles */
+.sprint-detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.sprint-title-section {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.sprint-title-section h2 {
+  margin: 0;
+}
+
+.sprint-details {
+  display: grid;
+  gap: 2rem;
+}
+
+.sprint-info-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.info-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1.5rem;
+}
+
+.info-card h3 {
+  margin: 0 0 1rem 0;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0.5rem;
+}
+
+.info-item {
+  margin-bottom: 1rem;
+}
+
+.info-item:last-child {
+  margin-bottom: 0;
+}
+
+.info-item strong {
+  display: block;
+  margin-bottom: 0.25rem;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.info-item p {
+  margin: 0;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.stats-grid {
+  display: flex;
+  justify-content: space-around;
+  gap: 1rem;
+}
+
+.sprint-stories,
+.sprint-tickets {
+  margin-top: 2rem;
+}
+
+.sprint-stories h3,
+.sprint-tickets h3 {
+  margin-bottom: 1rem;
+  color: var(--text-primary);
+  border-bottom: 2px solid var(--primary-color);
+  padding-bottom: 0.5rem;
+}
+
+.work-items-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.work-item {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1rem;
+  cursor: pointer;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.work-item:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
+}
+
+.work-item.story-item {
+  border-left: 4px solid var(--success-color);
+}
+
+.work-item.ticket-item {
+  border-left: 4px solid var(--info-color);
+}
+
+.work-item .item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.5rem;
+}
+
+.work-item .item-header h4 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 1rem;
+  flex: 1;
+}
+
+.work-item .item-meta {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.work-item .item-meta span {
+  padding: 0.125rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+}
+
+.work-item .item-meta .status {
+  background: var(--primary-color);
+  color: white;
+}
+
+.work-item .item-meta .priority {
+  color: white;
+}
+
+.work-item .item-meta .points {
+  background: var(--success-color);
+  color: white;
+}
+
+.work-item .item-description {
+  margin: 0.5rem 0;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.work-item .item-footer {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.empty-sprint {
+  text-align: center;
+  padding: 3rem;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  border: 2px dashed var(--border-color);
+}
+
+.empty-sprint p {
+  margin-bottom: 1rem;
+  color: var(--text-secondary);
+  font-size: 1.125rem;
+}
+
+/* Work Board Sprint Controls */
+.work-board-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.sprint-filter {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sprint-filter label {
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.sprint-select {
+  padding: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--card-bg);
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  min-width: 200px;
+}
+
+.sprint-select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.2);
+}
+
+/* Sprint badges for work items */
+.sprint-badge {
+  display: inline-block;
+  padding: 0.125rem 0.5rem;
+  background: var(--warning-color);
+  color: white;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-top: 0.25rem;
+}
+
+/* Button variants */
+.btn.btn-sm {
+  padding: 0.25rem 0.75rem;
+  font-size: 0.875rem;
+  border-radius: 4px;
+}
+
+.btn.btn-success {
+  background-color: var(--success-color);
+  border-color: var(--success-color);
+  color: white;
+}
+
+.btn.btn-success:hover {
+  background-color: #218838;
+  border-color: #1e7e34;
+}
+
+.btn.btn-danger {
+  background-color: var(--error-color);
+  border-color: var(--error-color);
+  color: white;
+}
+
+.btn.btn-danger:hover {
+  background-color: #c82333;
+  border-color: #bd2130;
+}
+
+.btn.btn-primary {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  color: white;
+}
+
+.btn.btn-primary:hover {
+  background-color: #0056b3;
+  border-color: #004085;
+}
+
+.btn.btn-secondary {
+  background-color: #6c757d;
+  border-color: #6c757d;
+  color: white;
+}
+
+.btn.btn-secondary:hover {
+  background-color: #5a6268;
+  border-color: #545b62;
+}
+
+/* Responsive design for sprint controls */
+@media (max-width: 768px) {
+  .work-board-controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+  
+  .sprint-filter {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .sprint-select {
+    min-width: auto;
+  }
+  
+  .view-controls,
+  .work-actions {
+    justify-content: center;
+  }
+  
+  .sprints-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .sprint-info-section {
+    grid-template-columns: 1fr;
+  }
+}

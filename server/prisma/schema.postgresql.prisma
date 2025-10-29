@@ -1,0 +1,231 @@
+// Prisma schema for PostgreSQL
+// Use for local PostgreSQL server or cloud database deployments
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  username  String   @unique
+  password  String
+  firstName String?
+  lastName  String?
+  avatarUrl String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Team relationships
+  teamsOwned      Team[]           @relation("TeamOwner")
+  teamMemberships TeamMember[]
+  teamInvites     TeamInvite[]
+
+  // Project relationships
+  projectMemberships ProjectMember[]
+  projectInvites     ProjectInvite[]
+
+  // Work item relationships
+  assignedStories Story[] @relation("StoryAssignee")
+  assignedTickets Ticket[] @relation("TicketAssignee")
+  createdStories  Story[] @relation("StoryCreator")
+  createdTickets  Ticket[] @relation("TicketCreator")
+
+  @@map("users")
+}
+
+model Team {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  ownerId     Int
+  owner       User     @relation("TeamOwner", fields: [ownerId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Team members and invites
+  members  TeamMember[]
+  invites  TeamInvite[]
+  projects Project[]
+
+  @@map("teams")
+}
+
+model TeamMember {
+  id     Int      @id @default(autoincrement())
+  teamId Int
+  userId Int
+  role   TeamRole @default(MEMBER)
+  joinedAt DateTime @default(now())
+
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, userId])
+  @@map("team_members")
+}
+
+model TeamInvite {
+  id       Int               @id @default(autoincrement())
+  teamId   Int
+  userId   Int
+  status   InviteStatus      @default(PENDING)
+  role     TeamRole          @default(MEMBER)
+  sentAt   DateTime          @default(now())
+  respondedAt DateTime?
+
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, userId])
+  @@map("team_invites")
+}
+
+model Project {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  key         String   @unique // Project key like "PROJ"
+  teamId      Int
+  team        Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Project members and invites
+  members ProjectMember[]
+  invites ProjectInvite[]
+
+  // Work items
+  stories Story[]
+  tickets Ticket[]
+
+  @@map("projects")
+}
+
+model ProjectMember {
+  id        Int         @id @default(autoincrement())
+  projectId Int
+  userId    Int
+  role      ProjectRole @default(DEVELOPER)
+  joinedAt  DateTime    @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+  @@map("project_members")
+}
+
+model ProjectInvite {
+  id          Int         @id @default(autoincrement())
+  projectId   Int
+  userId      Int
+  status      InviteStatus @default(PENDING)
+  role        ProjectRole @default(DEVELOPER)
+  sentAt      DateTime    @default(now())
+  respondedAt DateTime?
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+  @@map("project_invites")
+}
+
+model Story {
+  id          Int         @id @default(autoincrement())
+  title       String
+  description String?
+  status      StoryStatus @default(BACKLOG)
+  priority    Priority    @default(MEDIUM)
+  points      Int?        // Story points
+  projectId   Int
+  assigneeId  Int?
+  createdById Int
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  assignee  User?   @relation("StoryAssignee", fields: [assigneeId], references: [id])
+  createdBy User    @relation("StoryCreator", fields: [createdById], references: [id])
+
+  // Related tickets
+  tickets Ticket[]
+
+  @@map("stories")
+}
+
+model Ticket {
+  id          Int          @id @default(autoincrement())
+  title       String
+  description String?
+  status      TicketStatus @default(OPEN)
+  priority    Priority     @default(MEDIUM)
+  type        TicketType   @default(TASK)
+  projectId   Int
+  storyId     Int?         // Optional: tickets can belong to stories
+  assigneeId  Int?
+  createdById Int
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  story     Story?  @relation(fields: [storyId], references: [id], onDelete: SetNull)
+  assignee  User?   @relation("TicketAssignee", fields: [assigneeId], references: [id])
+  createdBy User    @relation("TicketCreator", fields: [createdById], references: [id])
+
+  @@map("tickets")
+}
+
+// Enums
+enum TeamRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+enum ProjectRole {
+  ADMIN
+  DEVELOPER
+  VIEWER
+}
+
+enum InviteStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
+enum StoryStatus {
+  BACKLOG
+  IN_PROGRESS
+  IN_REVIEW
+  DONE
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  IN_REVIEW
+  RESOLVED
+  CLOSED
+}
+
+enum TicketType {
+  TASK
+  BUG
+  FEATURE
+  IMPROVEMENT
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}

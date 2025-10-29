@@ -1,0 +1,65 @@
+/* Invitations */
+.invitations-section {
+  margin-bottom: 2rem;
+}
+
+.invitations-section h3 {
+  color: var(--primary-color);
+  margin-bottom: 1rem;
+}
+
+.invitations-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.invitation-card {
+  background-color: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 1.5rem;
+}
+
+.invitation-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.invitation-header h4 {
+  margin: 0;
+  color: var(--primary-color);
+}
+
+.role-badge {
+  background-color: var(--primary-color);
+  color: white;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+}
+
+.invitation-details p {
+  margin: 0.5rem 0;
+}
+
+
+
+.invitation-date {
+  color: #888;
+  font-size: 0.8rem;
+}
+
+.invitation-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.no-invitations {
+  text-align: center;
+  color: #ccc;
+  padding: 2rem;
+}

@@ -1,0 +1,289 @@
+// Prisma schema for SQLite
+// Use for local machine deployments with file-based database
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  username  String   @unique
+  password  String
+  firstName String?
+  lastName  String?
+  avatarUrl String?
+  role      String   @default("USER") // USER, ADMIN, SUPERUSER
+  isApproved Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Team relationships
+  teamsOwned      Team[]           @relation("TeamOwner")
+  teamMemberships TeamMember[]
+  teamInvites     TeamInvite[]
+
+  // Project relationships
+  projectMemberships ProjectMember[]
+  projectInvites     ProjectInvite[]
+
+  // Work item relationships
+  assignedStories Story[] @relation("StoryAssignee")
+  assignedTickets Ticket[] @relation("TicketAssignee")
+  reportedStories Story[] @relation("StoryReporter")
+  reportedTickets Ticket[] @relation("TicketReporter")
+  createdStories  Story[] @relation("StoryCreator")
+  createdTickets  Ticket[] @relation("TicketCreator")
+
+  // Comments and work logs
+  ticketComments TicketComment[] @relation("TicketCommentAuthor")
+  ticketWorkLogs TicketWorkLog[] @relation("TicketWorkLogAuthor")
+
+  // User approval relationships
+  approvedBy User? @relation("UserApproval", fields: [approvedById], references: [id])
+  approvedById String?
+  approvedUsers User[] @relation("UserApproval")
+  approvedAt DateTime?
+
+  // Approved user management
+  createdApprovedUsers ApprovedUser[] @relation("ApprovedUserCreator")
+
+  @@map("users")
+}
+
+model ApprovedUser {
+  id          String   @id @default(uuid())
+  email       String   @unique
+  defaultRole String   @default("USER") // USER, ADMIN, SUPERUSER
+  createdAt   DateTime @default(now())
+  createdById String
+  createdBy   User     @relation("ApprovedUserCreator", fields: [createdById], references: [id])
+
+  @@map("approved_users")
+}
+
+model Team {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  ownerId     String
+  owner       User     @relation("TeamOwner", fields: [ownerId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Team members and invites
+  members  TeamMember[]
+  invites  TeamInvite[]
+  projects Project[]
+
+  aiSupported AISupported[] 
+  premium String? @default("PREMIUM") // Basic, Premium
+
+
+  @@map("teams")
+}
+
+model TeamMember {
+  id       String   @id @default(uuid())
+  teamId   String
+  userId   String
+  role     String   @default("MEMBER") // OWNER, ADMIN, MEMBER
+  joinedAt DateTime @default(now())
+
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, userId])
+  @@map("team_members")
+}
+
+model TeamInvite {
+  id          String    @id @default(uuid())
+  teamId      String
+  userId      String
+  status      String    @default("PENDING") // PENDING, ACCEPTED, DECLINED
+  role        String    @default("MEMBER") // OWNER, ADMIN, MEMBER
+  sentAt      DateTime  @default(now())
+  respondedAt DateTime?
+
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, userId])
+  @@map("team_invites")
+}
+
+model Project {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  key         String   @unique // Project key like "PROJ"
+  teamId      String
+  team        Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Project members and invites
+  members ProjectMember[]
+  invites ProjectInvite[]
+
+  // Work items
+  stories Story[]
+  tickets Ticket[]
+  sprints Sprint[]
+
+  @@map("projects")
+}
+
+model Sprint {
+  id        String    @id @default(uuid())
+  name      String
+  goal      String?
+  startDate DateTime?
+  endDate   DateTime?
+  status    String    @default("PLANNED") // PLANNED, ACTIVE, COMPLETED
+  projectId String
+  project   Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  // Sprint backlog
+  stories Story[]
+  tickets Ticket[]
+
+  @@map("sprints")
+}
+
+model ProjectMember {
+  id        String   @id @default(uuid())
+  projectId String
+  userId    String
+  role      String   @default("DEVELOPER") // ADMIN, DEVELOPER, VIEWER
+  joinedAt  DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+  @@map("project_members")
+}
+
+model ProjectInvite {
+  id          String    @id @default(uuid())
+  projectId   String
+  userId      String
+  status      String    @default("PENDING") // PENDING, ACCEPTED, DECLINED
+  role        String    @default("DEVELOPER") // ADMIN, DEVELOPER, VIEWER
+  sentAt      DateTime  @default(now())
+  respondedAt DateTime?
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([projectId, userId])
+  @@map("project_invites")
+}
+model AISupported {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  teamId    String
+  team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  enabled Boolean @default(true) 
+
+  @@map("ai_supported_teams")
+}
+
+model Story {
+  id          String    @id @default(uuid())
+  title       String
+  description String?
+  status      String    @default("BACKLOG") // BACKLOG, IN_PROGRESS, IN_REVIEW, DONE
+  priority    String    @default("MEDIUM") // LOW, MEDIUM, HIGH, CRITICAL
+  points      Int?      // Story points
+  startDate   DateTime?
+  dueDate     DateTime?
+  projectId   String
+  sprintId    String?
+  assigneeId  String?
+  reporterId  String
+  createdById String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  sprint    Sprint? @relation(fields: [sprintId], references: [id], onDelete: SetNull)
+  assignee  User?   @relation("StoryAssignee", fields: [assigneeId], references: [id])
+  reporter  User    @relation("StoryReporter", fields: [reporterId], references: [id])
+  createdBy User    @relation("StoryCreator", fields: [createdById], references: [id])
+
+  // Related tickets
+  tickets Ticket[]
+
+  @@map("stories")
+}
+
+model Ticket {
+  id          String    @id @default(uuid())
+  title       String
+  description String?
+  status      String    @default("OPEN") // OPEN, IN_PROGRESS, IN_REVIEW, RESOLVED, CLOSED
+  priority    String    @default("MEDIUM") // LOW, MEDIUM, HIGH, CRITICAL
+  type        String    @default("TASK") // TASK, BUG, FEATURE, IMPROVEMENT
+  timeLogged  Float     @default(0.0) // Time logged in hours
+  startDate   DateTime?
+  dueDate     DateTime?
+  projectId   String
+  sprintId    String?
+  storyId     String?   // Optional: tickets can belong to stories
+  assigneeId  String?
+  reporterId  String
+  createdById String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  sprint    Sprint? @relation(fields: [sprintId], references: [id], onDelete: SetNull)
+  story     Story?  @relation(fields: [storyId], references: [id], onDelete: SetNull)
+  assignee  User?   @relation("TicketAssignee", fields: [assigneeId], references: [id])
+  reporter  User    @relation("TicketReporter", fields: [reporterId], references: [id])
+  createdBy User    @relation("TicketCreator", fields: [createdById], references: [id])
+
+  // Comments and work logs
+  comments  TicketComment[]
+  workLogs  TicketWorkLog[]
+
+  @@map("tickets")
+}
+
+model TicketComment {
+  id        String   @id @default(uuid())
+  content   String
+  ticketId  String
+  authorId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  author User   @relation("TicketCommentAuthor", fields: [authorId], references: [id])
+
+  @@map("ticket_comments")
+}
+
+model TicketWorkLog {
+  id          String   @id @default(uuid())
+  hours       Float
+  description String
+  ticketId    String
+  authorId    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  author User   @relation("TicketWorkLogAuthor", fields: [authorId], references: [id])
+
+  @@map("ticket_work_logs")
+}

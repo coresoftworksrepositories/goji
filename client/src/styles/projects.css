@@ -1,0 +1,96 @@
+/* Projects */
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.project-card {
+  background-color: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 1.5rem;
+}
+
+.project-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+.ticket-view-controls {
+  margin-bottom: 1rem;;
+}
+
+.project-header h3 {
+  margin: 0;
+  color: var(--primary-color);
+}
+
+.project-key {
+  background-color: #333;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+.project-stats {
+  display: flex;
+  gap: 1.5rem;
+  margin: 1rem 0;
+}
+
+.stat {
+  text-align: center;
+}
+
+.stat-number {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--primary-color);
+}
+
+.stat-label {
+  display: block;
+  font-size: 0.8rem;
+  color: #ccc;
+}
+
+.project-members h4 {
+  margin: 1rem 0 0.5rem 0;
+  font-size: 0.9rem;
+  color: #ccc;
+}
+
+.member-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: var(--primary-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: bold;
+}
+
+.member-avatar.more {
+  background-color: #333;
+}
+
+.project-actions {
+  margin-top: 1rem;
+}
+
+.project-actions button {
+  width: 100%;
+}
+
+.project-info {
+  display: flex;
+  gap: 1rem;
+  margin: 0.5rem 0;
+}

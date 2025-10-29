@@ -1,0 +1,37 @@
+{
+  "name": "goji-server",
+  "version": "1.0.0",
+  "description": "Express server with Prisma ORM",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon index.js",
+    "start": "node index.js",
+    "create-superuser": "node scripts/createSuperuser.js",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:migrate": "prisma migrate dev",
+    "db:studio": "prisma studio",
+    "db:reset": "prisma db push --force-reset",
+    "db:use-sqlite": "copy prisma\\schema.sqlite.prisma prisma\\schema.prisma && npm run db:generate",
+    "db:use-postgres": "copy prisma\\schema.postgresql.prisma prisma\\schema.prisma && npm run db:generate",
+    "db:init-sqlite": "npm run db:use-sqlite && npm run db:push",
+    "db:init-postgres": "npm run db:use-postgres && npm run db:migrate"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.6.0",
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "bcrypt": "^5.1.1",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.11.3",
+    "sqlite3": "^5.1.6"
+  },
+  "devDependencies": {
+    "prisma": "^5.6.0",
+    "nodemon": "^3.0.1"
+  },
+  "keywords": ["express", "prisma", "postgres", "sqlite"],
+  "author": "",
+  "license": "ISC"
+}

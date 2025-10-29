@@ -1,0 +1,41 @@
+/* Navigation */
+.nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background-color: #1a1a1a;
+  border-bottom: 1px solid #333;
+}
+
+.nav h2 {
+  margin: 0;
+  color: var(--primary-color);
+}
+
+.nav-buttons {
+  display: flex;
+  gap: 1rem;
+}
+
+.nav-buttons button {
+  background-color: transparent;
+  border: 1px solid #333;
+}
+
+.nav-buttons button.active {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color-hover);
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.back-button {
+  background-color: transparent;
+  border: 1px solid #333;
+  padding: 0.5rem 1rem;
+}

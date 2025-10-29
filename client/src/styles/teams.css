@@ -1,0 +1,228 @@
+/* Teams Grid */
+.teams-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.team-card {
+  background-color: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 1.5rem;
+}
+
+.team-card h3 {
+  margin: 0 0 1rem 0;
+  color: var(--primary-color);
+}
+
+.team-stats {
+  display: flex;
+  gap: 1rem;
+  margin: 1rem 0;
+  font-size: 0.9rem;
+  color: #ccc;
+}
+
+.team-members, .pending-invites {
+  margin: 1rem 0;
+}
+
+.team-members h4, .pending-invites h4 {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.9rem;
+  color: #ccc;
+}
+
+.member-item, .invite-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.25rem 0;
+  font-size: 0.8rem;
+}
+
+.member-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.member-name {
+  font-weight: 500;
+  color: #fff;
+}
+
+.member-email {
+  color: #aaa;
+  font-size: 0.9rem;
+}
+
+.remove-member-btn {
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.remove-member-btn:hover {
+  opacity: 1;
+}
+
+.pending-invites-section {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #333;
+}
+
+.pending-invites-section h4 {
+  margin-bottom: 0.5rem;
+  color: #ccc;
+  font-size: 0.9rem;
+}
+
+.invites-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.invite-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem;
+  background-color: #2a2a2a;
+  border-radius: 4px;
+  border: 1px solid #444;
+}
+
+.invite-item .member-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.invite-item .role {
+  background-color: #444;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  color: #ccc;
+}
+
+.member-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.role-btn svg {
+    position: absolute;
+    color: #000;
+}
+
+.role-btn {
+     display: flex;
+    position: relative;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  width: 28px;
+  height: 28px;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+.role-btn:hover {
+  opacity: 1;
+}
+
+.role-options {
+  display: flex;
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+
+.role-option-btn {
+  background: #444;
+  color: white;
+  border: 1px solid #666;
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.role-option-btn:hover {
+  background: #555;
+}
+
+.role-option-btn.current {
+  background: #28a745;
+  border-color: #28a745;
+}
+
+.role-option-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.role {
+  background-color: #333;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+}
+
+.team-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.team-actions button {
+  flex: 1;
+  font-size: 0.9rem;
+  padding: 0.5rem;
+}
+
+.members-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.member-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #2a2a2a;
+  border: 1px solid #444;
+  border-radius: 6px;
+  padding: 1rem;
+}
+
+.members-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}

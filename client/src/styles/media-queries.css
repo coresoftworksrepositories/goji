@@ -1,0 +1,145 @@
+/* Light Mode Media Queries */
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+  
+  a:hover {
+    color: #747bff;
+  }
+  
+  button {
+    background-color: #f9f9f9;
+    color: #213547;
+  }
+  
+  .form, .team-card, .project-card, .kanban-column, .kanban-item, .modal, .invitation-card {
+    background-color: #f9f9f9;
+    border-color: #ddd;
+  }
+  
+  .form input, .form textarea, .form select, .modal input, .modal textarea, .modal select {
+    background-color: white;
+    border-color: #ddd;
+    color: #213547;
+  }
+  
+  .nav {
+    background-color: #f9f9f9;
+    border-bottom-color: #ddd;
+  }
+  
+  /* Settings Light Mode */
+  .settings-container, .project-settings-container {
+    color: #213547;
+  }
+  
+  .settings-header h2 {
+    color: #213547;
+  }
+  
+  .settings-section {
+    background-color: #f9f9f9;
+    border-color: #ddd;
+  }
+  
+  .settings-section h3 {
+    color: #213547;
+    border-bottom-color: #ddd;
+  }
+  
+  .settings-form label, .theme-label, .member-name {
+    color: #213547;
+  }
+  
+  .settings-form input, .settings-form textarea, .settings-form select {
+    background-color: white;
+    border-color: #ddd;
+    color: #213547;
+  }
+  
+  .member-item {
+    background-color: white;
+    border-color: #ddd;
+  }
+  
+  .info-item {
+    border-bottom-color: #ddd;
+  }
+  
+  .info-item strong {
+    color: #213547;
+  }
+  
+  /* Story/Ticket Light Mode */
+  .story-view-container, .ticket-view-container {
+    color: #213547;
+  }
+  
+  .story-title, .ticket-title, .story-section h3, .ticket-section h3, 
+  .story-details h3, .ticket-details h3 {
+    color: #213547;
+  }
+  
+  .story-section, .ticket-section, .story-details, .ticket-details {
+    background-color: #f9f9f9;
+    border-color: #ddd;
+  }
+  
+  .story-section h3, .ticket-section h3, .story-details h3, .ticket-details h3 {
+    border-bottom-color: #ddd;
+  }
+  
+  .story-description, .ticket-description {
+    color: #213547;
+  }
+  
+  .ticket-item, .story-link {
+    background-color: white;
+    border-color: #ddd;
+  }
+  
+  .ticket-item:hover, .story-link:hover {
+    background-color: #f8f9fa;
+  }
+  
+  .story-title-input, .ticket-title-input, .detail-item .form-control {
+    background-color: white;
+    border-color: #ddd;
+    color: #213547;
+  }
+  
+  .detail-item div, .ticket-title {
+    color: #213547;
+  }
+  
+  .loading, .error {
+    color: #213547;
+  }
+  
+  .error {
+    color: #dc3545;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .story-content, .ticket-content {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .story-header, .ticket-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .story-title, .ticket-title {
+    font-size: 1.5rem;
+  }
+
+  .story-view-container, .ticket-view-container {
+    padding: 1rem;
+  }
+}

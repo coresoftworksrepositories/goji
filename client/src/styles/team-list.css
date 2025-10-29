@@ -1,0 +1,67 @@
+.teams-list {
+    border-radius: 18px;
+    background: #FDFFEE;
+    padding: 1%;
+    color: #000;
+}
+
+.team-row {
+    display: flex;
+    width: 100%;
+    align-items: center;
+}
+
+.team-row div {
+    width: 100%;
+    text-align: center;
+}
+
+.your-teams {
+    background: #C89292;
+    padding: 1%;
+    color: #000;
+    text-align: center;
+    font-family: var(--font-one);
+    font-size: 32px;
+    font-style: italic;
+    font-weight: 700;
+    width: 25%;
+    line-height: normal;
+}
+
+.teams-list-header {
+    display: flex;
+    width: 98%;
+    align-items: center;
+    justify-content: space-around;
+    background: #1a1a1a;
+    border-radius: 17px;
+    background: #1a1a1a;
+    color: #FFF;
+    padding: 1%;
+}
+
+.team-row {
+    display: flex;
+    width: 98%;
+    align-items: center;
+    justify-content: baseline;
+    background: #1a1a1a;
+    border-radius: 15px;
+    background: #d3d3d3;
+    color: #000000;
+    padding: 1%;
+}
+
+.team-description {
+  font-style: italic;
+  color: #ccc;
+}
+.teams-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.team-name {
+  font-size: 0.9rem;
+}
