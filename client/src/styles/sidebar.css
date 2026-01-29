@@ -285,6 +285,27 @@
     display: none;
  }
 
+ .context-menu {
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  z-index: 1000;
+  border-radius: 4px;
+  padding: 4px;
+  min-width: 160px;
+ }
+ .context-menu-item, .context-menu-item a {
+display: block;
+ width: 100%; 
+ padding: 8px 12px; 
+ background: transparent; 
+ border: none; 
+ text-align: left;
+ color: #000;
+ }
+.context-menu-item:hover, .context-menu-item a:hover {
+    background: #C89292;
+    color: #000;
+}
 /* Mobile responsive */
 @media (max-width: 768px) {
   .sidebar-closed {
