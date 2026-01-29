@@ -16,6 +16,8 @@ const WorkBoard = () => {
   const [activeView, setActiveView] = useState('board'); // 'board', 'list', or 'summary'
   const [showCreateStory, setShowCreateStory] = useState(false);
   const [showCreateTicket, setShowCreateTicket] = useState(false);
+   const [teamMembers, setTeamMembers] = useState([]);
+  
   const [storyForm, setStoryForm] = useState({
     title: '',
     description: '',
@@ -29,6 +31,7 @@ const WorkBoard = () => {
     type: 'TASK',
     priority: 'MEDIUM',
     storyId: '',
+    assigneeId: '',
     sprintId: ''
   });
 
@@ -66,6 +69,8 @@ const WorkBoard = () => {
       setStories(storiesData);
       setTickets(ticketsData);
       setSprints(sprintsData);
+      const teamMembersData = await authService.getTeamMembers(teamId);
+      setTeamMembers(teamMembersData);
     } catch (error) {
       setError('Failed to load work items');
       console.error('Error loading work items:', error);
@@ -109,7 +114,7 @@ const WorkBoard = () => {
         ticketForm.type,
         ticketForm.priority,
         ticketForm.storyId || null,
-        null // assigneeId
+        ticketForm.assigneeId || null
       );
       
       // If sprint is selected, assign the ticket to the sprint
@@ -361,6 +366,17 @@ const WorkBoard = () => {
                 {stories.map((story) => (
                   <option key={story.id} value={story.id}>
                     {story.title}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={ticketForm.assigneeId}
+                onChange={(e) => setTicketForm({ ...ticketForm, assigneeId: e.target.value })}
+              >
+                <option value="">Unassigned</option>
+                {teamMembers.map((member) => (
+                  <option key={member.id} value={member.id}>
+                    {member.username}
                   </option>
                 ))}
               </select>
