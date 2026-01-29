@@ -8,6 +8,7 @@ const Sidebar = ({ isOpen, onToggle }) => {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [projectsLoading, setProjectsLoading] = useState(true);
+  const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0, type: null, item: null });
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -41,15 +42,55 @@ const Sidebar = ({ isOpen, onToggle }) => {
   };
 
   const handleTeamClick = (teamId) => {
-    navigate(`/teams/${teamId}/projects`);
+    window.location.href = `/teams/${teamId}/projects`;
   };
 
   const handleProjectClick = (projectId) => {
-    navigate(`/projects/${projectId}`);
+    window.location.href = `/projects/${projectId}`;
   };
 
   const handleTeamsClick = () => {
-    navigate('/teams');
+    window.location.href = '/teams';
+  };
+
+  // Context menu handlers
+  useEffect(() => {
+    const handleDocClick = () => setContextMenu(prev => prev.visible ? { ...prev, visible: false } : prev);
+    document.addEventListener('click', handleDocClick);
+    return () => document.removeEventListener('click', handleDocClick);
+  }, []);
+
+  const handleTeamContextMenu = (e, team) => {
+    e.preventDefault();
+    setContextMenu({ visible: true, x: e.clientX, y: e.clientY, type: 'team', item: team });
+  };
+
+  const handleProjectContextMenu = (e, project) => {
+    e.preventDefault();
+    setContextMenu({ visible: true, x: e.clientX, y: e.clientY, type: 'project', item: project });
+  };
+
+  const openContextItem = (newTab = false) => {
+    const { type, item } = contextMenu;
+    if (!item) return;
+    const path = type === 'team' ? `/teams/${item.id}/projects` : `/projects/${item.id}`;
+    const url = window.location.origin + path;
+    if (newTab) window.open(url, '_blank');
+    else window.location.href = url;
+    setContextMenu(prev => ({ ...prev, visible: false }));
+  };
+
+  const copyContextLink = async () => {
+    const { type, item } = contextMenu;
+    if (!item) return;
+    const path = type === 'team' ? `/teams/${item.id}/projects` : `/projects/${item.id}`;
+    const url = window.location.origin + path;
+    try {
+      await navigator.clipboard.writeText(url);
+    } catch (err) {
+      console.error('Clipboard write failed', err);
+    }
+    setContextMenu(prev => ({ ...prev, visible: false }));
   };
 
   const isActiveTeam = (teamId) => {
@@ -99,6 +140,7 @@ const Sidebar = ({ isOpen, onToggle }) => {
                       key={team.id}
                       className={`nav-item team-item ${isActiveTeam(team.id) ? 'active' : ''}`}
                       onClick={() => handleTeamClick(team.id)}
+                      onContextMenu={(e) => handleTeamContextMenu(e, team)}
                       title={team.description || team.name}
                     >
                       <span className="nav-icon">
@@ -120,6 +162,7 @@ const Sidebar = ({ isOpen, onToggle }) => {
                       key={project.id}
                       className={`nav-item project-item ${isActiveProject(project.id) ? 'active' : ''}`}
                       onClick={() => handleProjectClick(project.id)}
+                      onContextMenu={(e) => handleProjectContextMenu(e, project)}
                       title={`${project.name} - ${project.team.name}`}
                     >
                       <span className="nav-icon">
@@ -162,6 +205,22 @@ const Sidebar = ({ isOpen, onToggle }) => {
 
         </div>
       </div>
+      {contextMenu.visible && (
+        <div
+          className="context-menu"
+          style={{
+            position: 'fixed',
+            top: contextMenu.y,
+            left: contextMenu.x,
+            
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <button className="context-menu-item" onClick={() => openContextItem(false)}>Open</button>
+          <button className="context-menu-item" onClick={() => openContextItem(true)}>Open in new tab</button>
+          <button className="context-menu-item" onClick={() => copyContextLink()}>Copy link</button>
+        </div>
+      )}
     </>
   );
 };
