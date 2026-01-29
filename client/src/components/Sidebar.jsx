@@ -214,7 +214,7 @@ const Sidebar = ({ isOpen, onToggle }) => {
                 }}></div>
               </div>
               <div className='nav-section-bottom-item'>
-               v.{import.meta.env.VITE_VERSION_NUMBER || '0.1.1'}
+               v.{import.meta.env.VITE_VERSION_NUMBER || '0.1.2'}
               </div>
             </div>
 

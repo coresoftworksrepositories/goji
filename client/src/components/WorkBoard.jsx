@@ -17,6 +17,7 @@ const WorkBoard = () => {
   const [showCreateStory, setShowCreateStory] = useState(false);
   const [showCreateTicket, setShowCreateTicket] = useState(false);
    const [teamMembers, setTeamMembers] = useState([]);
+  const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0, type: null, item: null });
   
   const [storyForm, setStoryForm] = useState({
     title: '',
@@ -55,6 +56,13 @@ const WorkBoard = () => {
       loadProjectAndWorkItems();
     }
   }, [projectId]);
+
+  // Close context menu when clicking elsewhere
+  useEffect(() => {
+    const handleDocClick = () => setContextMenu(prev => prev.visible ? { ...prev, visible: false } : prev);
+    document.addEventListener('click', handleDocClick);
+    return () => document.removeEventListener('click', handleDocClick);
+  }, []);
 
   const loadProjectAndWorkItems = async () => {
     try {
@@ -146,6 +154,43 @@ const WorkBoard = () => {
     } catch (error) {
       setError('Failed to update ticket status');
     }
+  };
+
+  const handleStoryContextMenu = (e, story) => {
+    e.preventDefault();
+    setContextMenu({ visible: true, x: e.clientX, y: e.clientY, type: 'story', item: story });
+  };
+
+  const handleTicketContextMenu = (e, ticket) => {
+    e.preventDefault();
+    setContextMenu({ visible: true, x: e.clientX, y: e.clientY, type: 'ticket', item: ticket });
+  };
+
+  const openContextItem = (newTab = false) => {
+    const { type, item } = contextMenu;
+    if (!item) return;
+    let path;
+    if (type === 'story') path = `/teams/${teamId}/projects/${projectId}/stories/${item.id}`;
+    else path = `/teams/${teamId}/projects/${projectId}/tickets/${item.id}`;
+    const url = window.location.origin + path;
+    if (newTab) window.open(url, '_blank');
+    else window.location.href = url;
+    setContextMenu(prev => ({ ...prev, visible: false }));
+  };
+
+  const copyContextLink = async () => {
+    const { type, item } = contextMenu;
+    if (!item) return;
+    let path;
+    if (type === 'story') path = `/teams/${teamId}/projects/${projectId}/stories/${item.id}`;
+    else path = `/teams/${teamId}/projects/${projectId}/tickets/${item.id}`;
+    const url = window.location.origin + path;
+    try {
+      await navigator.clipboard.writeText(url);
+    } catch (err) {
+      console.error('Clipboard write failed', err);
+    }
+    setContextMenu(prev => ({ ...prev, visible: false }));
   };
 
   const getPriorityColor = (priority) => {
@@ -422,6 +467,7 @@ const WorkBoard = () => {
                           key={story.id} 
                           className="kanban-item story-item"
                           onClick={() => navigate(`/teams/${teamId}/projects/${projectId}/stories/${story.id}`)}
+                          onContextMenu={(e) => handleStoryContextMenu(e, story)}
                         >
                           <div className="item-header">
                             <span className="item-title">{story.title}</span>
@@ -481,6 +527,7 @@ const WorkBoard = () => {
                           key={ticket.id} 
                           className="kanban-item ticket-item"
                           onClick={() => navigate(`/teams/${teamId}/projects/${projectId}/tickets/${ticket.id}`)}
+                          onContextMenu={(e) => handleTicketContextMenu(e, ticket)}
                         >
                           <div className="item-header">
                             <span className="type-icon">{getTypeIcon(ticket.type)}</span>
@@ -532,7 +579,7 @@ const WorkBoard = () => {
             <h3>Stories ({getFilteredStories().length})</h3>
             <div className="items-list">
               {getFilteredStories().map((story) => (
-                <div key={story.id} className="list-item">
+                <div key={story.id} className="list-item" onContextMenu={(e) => handleStoryContextMenu(e, story)}>
                   <div className="item-info">
                     <h4>{story.title}</h4>
                     <p>{story.description}</p>
@@ -558,7 +605,7 @@ const WorkBoard = () => {
             <h3>Tickets ({getFilteredTickets().length})</h3>
             <div className="items-list">
               {getFilteredTickets().map((ticket) => (
-                <div key={ticket.id} className="list-item">
+                <div key={ticket.id} className="list-item" onContextMenu={(e) => handleTicketContextMenu(e, ticket)}>
                   <div className="item-info">
                     <h4>
                       <span className="type-icon">{getTypeIcon(ticket.type)}</span>
@@ -583,6 +630,21 @@ const WorkBoard = () => {
               ))}
             </div>
           </div>
+        </div>
+      )}
+      {contextMenu.visible && (
+        <div
+          className="context-menu"
+          style={{
+            position: 'fixed',
+            top: contextMenu.y,
+            left: contextMenu.x,
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <button className="context-menu-item" onClick={() => openContextItem(false)}>Open</button>
+          <button className="context-menu-item" onClick={() => openContextItem(true)}>Open in new tab</button>
+          <button className="context-menu-item" onClick={() => copyContextLink()}>Copy link</button>
         </div>
       )}
     </div>
