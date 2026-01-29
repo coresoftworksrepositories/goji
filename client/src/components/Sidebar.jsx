@@ -46,7 +46,10 @@ const Sidebar = ({ isOpen, onToggle }) => {
   };
 
   const handleProjectClick = (projectId) => {
-    window.location.href = `/projects/${projectId}`;
+    const proj = projects.find(p => p.id === projectId);
+    const teamId = proj?.team?.id;
+    if (teamId) window.location.href = `/teams/${teamId}/projects/${projectId}/work`;
+    else window.location.href = `/projects/${projectId}`;
   };
 
   const handleTeamsClick = () => {
@@ -73,7 +76,13 @@ const Sidebar = ({ isOpen, onToggle }) => {
   const openContextItem = (newTab = false) => {
     const { type, item } = contextMenu;
     if (!item) return;
-    const path = type === 'team' ? `/teams/${item.id}/projects` : `/projects/${item.id}`;
+    let path;
+    if (type === 'team') path = `/teams/${item.id}/projects`;
+    else {
+      const teamId = item?.team?.id || projects.find(p => p.id === item.id)?.team?.id;
+      if (teamId) path = `/teams/${teamId}/projects/${item.id}/work`;
+      else path = `/projects/${item.id}`;
+    }
     const url = window.location.origin + path;
     if (newTab) window.open(url, '_blank');
     else window.location.href = url;
@@ -83,7 +92,13 @@ const Sidebar = ({ isOpen, onToggle }) => {
   const copyContextLink = async () => {
     const { type, item } = contextMenu;
     if (!item) return;
-    const path = type === 'team' ? `/teams/${item.id}/projects` : `/projects/${item.id}`;
+    let path;
+    if (type === 'team') path = `/teams/${item.id}/projects`;
+    else {
+      const teamId = item?.team?.id || projects.find(p => p.id === item.id)?.team?.id;
+      if (teamId) path = `/teams/${teamId}/projects/${item.id}/work`;
+      else path = `/projects/${item.id}`;
+    }
     const url = window.location.origin + path;
     try {
       await navigator.clipboard.writeText(url);
