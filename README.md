@@ -169,7 +169,7 @@ VITE_API_URL=http://localhost:3001
 
 ## Deployment
 
-1. Set up your production database (PostgreSQL)
+1. Set up your production database (Postgres or SQLite)
 2. Update environment variables for production
 3. Build the client: `cd client && npm run build`
 4. Deploy both client and server to your hosting platform
