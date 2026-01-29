@@ -302,6 +302,9 @@ display: block;
  text-align: left;
  color: #000;
  }
+ .active .project-team {
+    color: #000;
+}
 .context-menu-item:hover, .context-menu-item a:hover {
     background: #C89292;
     color: #000;
