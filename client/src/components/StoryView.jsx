@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { authService } from '../services/auth';
 import { openRouterService } from '../services/openrouter';
 import TodoGenerationModal from './TodoGenerationModal';
+import CreateTicketModal from './CreateTicketModal';
 
 const StoryView = () => {
   const { teamId, projectId, storyId } = useParams();
@@ -19,6 +20,16 @@ const StoryView = () => {
   const [todoLoading, setTodoLoading] = useState(false);
   const [todoError, setTodoError] = useState(null);
   const [aiEnabled, setAiEnabled] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [createForm, setCreateForm] = useState({
+    title: '',
+    description: '',
+    type: 'TASK',
+    priority: 'MEDIUM',
+    assigneeId: ''
+  });
+  const [createLoading, setCreateLoading] = useState(false);
+  const [createError, setCreateError] = useState(null);
 
   useEffect(() => {
     loadStoryData();
@@ -251,6 +262,14 @@ const StoryView = () => {
                   {todoLoading ? 'Generating...' : 'Generate Todos'}
                 </button>
               )}
+              <button
+                onClick={() => { setShowCreateModal(true); setCreateError(null); }}
+                className="btn btn-secondary"
+                style={{ marginLeft: '8px' }}
+                disabled={createLoading}
+              >
+                Create Ticket
+              </button>
             </div>
             <div className="tickets-list">
               {tickets.length === 0 ? (
@@ -409,6 +428,23 @@ const StoryView = () => {
         loading={todoLoading}
         error={todoError}
       />
+
+      {showCreateModal && (
+        <CreateTicketModal
+          projectId={projectId}
+          storyId={storyId}
+          setShowCreateModal={setShowCreateModal}
+          createForm={createForm}
+          setCreateForm={setCreateForm}
+          createLoading={createLoading}
+          setCreateLoading={setCreateLoading}
+          createError={createError}
+          setCreateError={setCreateError}
+          loadStoryData={loadStoryData}
+          projectMembers={projectMembers}
+        />
+        
+      )}
     </div>
   );
 };

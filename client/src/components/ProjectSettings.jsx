@@ -213,6 +213,7 @@ const ProjectSettings = () => {
     return <div className="error">Project not found</div>;
   }
 
+
   return (
     <div className="project-settings-container">
       <div className="settings-header">
@@ -274,7 +275,9 @@ const ProjectSettings = () => {
                 <div className="member-info">
                   <span className="member-name">{member.username}</span>
                   <span className="member-email">{member.email}</span>
-                  <span className="role">{member.role || 'DEVELOPER'}</span>
+                  <span className="role">
+                    {team?.members?.find(m => m.user.id === member.id)?.role || 'DEVELOPER'}
+                  </span>
                 </div>
                 <div className="member-actions">
                   {canManageProjectRoles() && (
