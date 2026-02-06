@@ -31,6 +31,7 @@ model User {
   // Project relationships
   projectMemberships ProjectMember[]
   projectInvites     ProjectInvite[]
+  defaultAssigneeForProjects Project[] @relation("ProjectDefaultAssignee")
 
   // Work item relationships
   assignedStories Story[] @relation("StoryAssignee")
@@ -125,6 +126,8 @@ model Project {
   key         String   @unique // Project key like "PROJ"
   teamId      String
   team        Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  defaultAssigneeId String?
+  defaultAssignee   User?    @relation("ProjectDefaultAssignee", fields: [defaultAssigneeId], references: [id], onDelete: SetNull)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

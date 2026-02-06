@@ -444,27 +444,12 @@ const TeamSettings = () => {
           
           <div className="members-list">
             {team.members?.map((member) => (
-              <div key={member.id} className="member-item" style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                padding: '0.75rem',
-                marginBottom: '0.5rem',
-                border: '1px solid #ddd',
-                borderRadius: '6px',
-                backgroundColor: '#f9f9f9'
-              }}>
+              <div key={member.id} className="member-item">
                 <div className="member-info">
-                  <span style={{ fontWeight: 'bold' }}>{member.user.username}</span>
-                  <span className="role" style={{ 
-                    marginLeft: '1rem',
-                    padding: '0.25rem 0.5rem',
-                    backgroundColor: '#e9ecef',
-                    borderRadius: '4px',
-                    fontSize: '0.85rem'
-                  }}>{member.role}</span>
+                  <span className="member-name">{member.user.username}</span>
+                  <span className="role">{member.role}</span>
                 </div>
-                <div className="member-actions" style={{ display: 'flex', gap: '0.5rem' }}>
+                <div className="member-actions">
                   {canManageTeam() && (
                     <button 
                       className="role-btn"

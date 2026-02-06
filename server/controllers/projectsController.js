@@ -150,6 +150,13 @@ const projectsController = {
               name: true
             }
           },
+          defaultAssignee: {
+            select: {
+              id: true,
+              username: true,
+              email: true
+            }
+          },
           _count: {
             select: {
               stories: true,
@@ -188,7 +195,7 @@ const projectsController = {
   async updateProject(req, res) {
     try {
       const projectId = req.params.projectId;
-      const { name, description } = req.body;
+      const { name, description, defaultAssigneeId } = req.body;
 
       const project = await prisma.project.findUnique({
         where: { id: projectId },
@@ -219,13 +226,21 @@ const projectsController = {
         where: { id: projectId },
         data: {
           ...(name && { name }),
-          ...(description && { description })
+          ...(description !== undefined && { description }),
+          ...(defaultAssigneeId !== undefined && { defaultAssigneeId: defaultAssigneeId || null })
         },
         include: {
           team: {
             select: {
               id: true,
               name: true
+            }
+          },
+          defaultAssignee: {
+            select: {
+              id: true,
+              username: true,
+              email: true
             }
           },
           _count: {

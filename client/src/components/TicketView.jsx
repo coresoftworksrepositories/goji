@@ -27,6 +27,11 @@ const TicketView = () => {
   const [editingWorkLog, setEditingWorkLog] = useState(null);
   const [editWorkLogForm, setEditWorkLogForm] = useState({ hours: '', description: '' });
   const [updatingWorkLog, setUpdatingWorkLog] = useState(false);
+  const [showMentionDropdown, setShowMentionDropdown] = useState(false);
+  const [mentionSearch, setMentionSearch] = useState('');
+  const [mentionStartPos, setMentionStartPos] = useState(0);
+  const [selectedMentionIndex, setSelectedMentionIndex] = useState(0);
+  const commentTextareaRef = React.useRef(null);
 
   useEffect(() => {
     loadTicketData();
@@ -135,6 +140,8 @@ const TicketView = () => {
       setAddingComment(true);
       await authService.addTicketComment(ticketId, newComment);
       setNewComment('');
+      setShowMentionDropdown(false);
+      setMentionSearch('');
       // Reload comments
       const commentsData = await authService.getTicketComments(ticketId);
       setComments(commentsData);
@@ -144,6 +151,74 @@ const TicketView = () => {
     } finally {
       setAddingComment(false);
     }
+  };
+
+  const handleCommentChange = (e) => {
+    const value = e.target.value;
+    const cursorPos = e.target.selectionStart;
+    setNewComment(value);
+
+    // Check for @ mention
+    const textBeforeCursor = value.substring(0, cursorPos);
+    const lastAtIndex = textBeforeCursor.lastIndexOf('@');
+    
+    if (lastAtIndex !== -1) {
+      const textAfterAt = textBeforeCursor.substring(lastAtIndex + 1);
+      // Check if there's a space after @ (which would end the mention)
+      if (!textAfterAt.includes(' ') && !textAfterAt.includes('\n')) {
+        setMentionStartPos(lastAtIndex);
+        setMentionSearch(textAfterAt.toLowerCase());
+        setShowMentionDropdown(true);
+        setSelectedMentionIndex(0);
+        return;
+      }
+    }
+    
+    setShowMentionDropdown(false);
+    setMentionSearch('');
+  };
+
+  const handleCommentKeyDown = (e) => {
+    if (!showMentionDropdown) return;
+
+    const filteredMembers = projectMembers.filter(member =>
+      member.username.toLowerCase().includes(mentionSearch)
+    );
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setSelectedMentionIndex(prev => 
+        prev < filteredMembers.length - 1 ? prev + 1 : prev
+      );
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setSelectedMentionIndex(prev => prev > 0 ? prev - 1 : 0);
+    } else if (e.key === 'Enter' || e.key === 'Tab') {
+      if (filteredMembers.length > 0) {
+        e.preventDefault();
+        selectMention(filteredMembers[selectedMentionIndex]);
+      }
+    } else if (e.key === 'Escape') {
+      setShowMentionDropdown(false);
+      setMentionSearch('');
+    }
+  };
+
+  const selectMention = (member) => {
+    const beforeMention = newComment.substring(0, mentionStartPos);
+    const afterMention = newComment.substring(commentTextareaRef.current.selectionStart);
+    const newValue = `${beforeMention}@${member.username} ${afterMention}`;
+    setNewComment(newValue);
+    setShowMentionDropdown(false);
+    setMentionSearch('');
+    
+    // Set cursor position after the mention
+    setTimeout(() => {
+      const newCursorPos = mentionStartPos + member.username.length + 2; // +2 for @ and space
+      commentTextareaRef.current.selectionStart = newCursorPos;
+      commentTextareaRef.current.selectionEnd = newCursorPos;
+      commentTextareaRef.current.focus();
+    }, 0);
   };
 
   const handleAddWorkLog = async (e) => {
@@ -320,15 +395,37 @@ const TicketView = () => {
         )}
       </div>
       
-      <form onSubmit={handleAddComment} className="add-comment-form">
+      <form onSubmit={handleAddComment} className="add-comment-form" style={{ position: 'relative' }}>
         <textarea
+          ref={commentTextareaRef}
           value={newComment}
-          onChange={(e) => setNewComment(e.target.value)}
-          placeholder="Add a comment..."
+          onChange={handleCommentChange}
+          onKeyDown={handleCommentKeyDown}
+          placeholder="Add a comment... (Type @ to mention someone)"
           rows="3"
           className="form-control"
           disabled={addingComment}
         />
+        {showMentionDropdown && (
+          <div className="mention-dropdown">
+            {projectMembers
+              .filter(member => member.username.toLowerCase().includes(mentionSearch))
+              .map((member, index) => (
+                <div
+                  key={member.id}
+                  className={`mention-item ${index === selectedMentionIndex ? 'selected' : ''}`}
+                  onClick={() => selectMention(member)}
+                  onMouseEnter={() => setSelectedMentionIndex(index)}
+                >
+                  <span className="mention-username">@{member.username}</span>
+                  {member.email && <span className="mention-email">{member.email}</span>}
+                </div>
+              ))}
+            {projectMembers.filter(member => member.username.toLowerCase().includes(mentionSearch)).length === 0 && (
+              <div className="mention-item mention-no-results">No users found</div>
+            )}
+          </div>
+        )}
         <button 
           type="submit" 
           className="btn btn-primary"

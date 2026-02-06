@@ -12,6 +12,7 @@ const StoryView = () => {
   const [tickets, setTickets] = useState([]);
   const [projectMembers, setProjectMembers] = useState([]);
   const [sprints, setSprints] = useState([]);
+  const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [editForm, setEditForm] = useState({});
@@ -49,17 +50,19 @@ const StoryView = () => {
   const loadStoryData = async () => {
     try {
       setLoading(true);
-      const [storyData, ticketsData, membersData, sprintsData] = await Promise.all([
+      const [storyData, ticketsData, membersData, sprintsData, projectData] = await Promise.all([
         authService.getStory(storyId),
         authService.getStoryTickets(storyId),
         authService.getProjectMembers(projectId),
-        authService.getProjectSprints(projectId)
+        authService.getProjectSprints(projectId),
+        authService.getProject(projectId)
       ]);
       
       setStory(storyData);
       setTickets(ticketsData);
       setProjectMembers(membersData);
       setSprints(sprintsData);
+      setProject(projectData);
       setEditForm({
         title: storyData.title,
         description: storyData.description || '',
@@ -263,7 +266,15 @@ const StoryView = () => {
                 </button>
               )}
               <button
-                onClick={() => { setShowCreateModal(true); setCreateError(null); }}
+                onClick={() => { 
+                  setShowCreateModal(true); 
+                  setCreateError(null);
+                  // Set default assignee from project if available
+                  setCreateForm(prev => ({
+                    ...prev,
+                    assigneeId: project?.defaultAssigneeId || ''
+                  }));
+                }}
                 className="btn btn-secondary"
                 style={{ marginLeft: '8px' }}
                 disabled={createLoading}
