@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { authService } from '../services/auth';
 
 export default function CreateTicketModal({
@@ -13,8 +13,19 @@ export default function CreateTicketModal({
     createError,
     setCreateError,
     loadStoryData,
-    projectMembers = []
+    projectMembers = [],
+    project
 }) {
+
+    // Set default assignee when modal opens if configured and assignee is a project member
+    useEffect(() => {
+        if (project?.defaultAssigneeId && !createForm.assigneeId) {
+            const defaultAssignee = projectMembers.find(m => m.id === project.defaultAssigneeId);
+            if (defaultAssignee) {
+                setCreateForm(prev => ({ ...prev, assigneeId: project.defaultAssigneeId }));
+            }
+        }
+    }, [project, projectMembers]);
 
     const onClose = () => {
         setShowCreateModal(false);
