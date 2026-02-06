@@ -101,6 +101,9 @@
   border: 1px solid #e9ecef;
 }
 
+.recharts-default-tooltip {
+    background: #000!important;
+}
 .chart-card.wide {
   grid-column: 1 / -1;
 }

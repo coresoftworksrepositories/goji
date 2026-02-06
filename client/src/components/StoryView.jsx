@@ -453,6 +453,7 @@ const StoryView = () => {
           setCreateError={setCreateError}
           loadStoryData={loadStoryData}
           projectMembers={projectMembers}
+          project={project}
         />
         
       )}

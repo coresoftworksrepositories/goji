@@ -15,6 +15,54 @@
 .work-board-header h2 {
   margin: 0;
 }
+
+.sprint-warning-banner {
+    background: transparent;
+    border: 2px solid var(--primary-color);
+    border-radius: 8px;
+    padding: 1rem 1.5rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    /* box-shadow: 0 2px 8px rgba(255, 193, 7, 0.2); */
+    justify-content: center;
+    align-content: center;
+}
+
+.sprint-warning-banner .warning-message {
+    font-size: 0.95rem;
+}
+
+.sprint-warning-banner .warning-message {
+    background-color: rgb(26 26 26);
+    border: none;
+    color: var(--primary-color);
+    padding: 1rem;
+    border-radius: 6px;
+    margin: 1rem 0;
+    font-size: 0.9rem;
+}
+
+.sprint-warning-banner .warning-message strong {
+  color: var(--primary-color-hover);
+  font-weight: 600;
+}
+
+.sprint-warning-banner .warning-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.sprint-warning-banner .warning-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+
+
 span.type-icon svg {
     color: #c89292;
 }
@@ -224,4 +272,7 @@ span.type-icon svg {
   padding: 0.1rem 0.4rem;
   border-radius: 4px;
   background-color: #333;
+}
+.kanban-column.drag-over h4 {
+    color: #000;
 }

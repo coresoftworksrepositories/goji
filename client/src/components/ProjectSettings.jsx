@@ -268,8 +268,8 @@ const ProjectSettings = () => {
               onChange={async (e) => {
                 try {
                   await authService.updateProject(projectId, { defaultAssigneeId: e.target.value || null });
-                  setProject(prev => ({ ...prev, defaultAssigneeId: e.target.value || null }));
                   setMessage('Default assignee updated successfully!');
+                  loadProjectData(); // Refresh to ensure UI reflects server state
                 } catch (error) {
                   setMessage(error.response?.data?.error || 'Failed to update default assignee');
                 }

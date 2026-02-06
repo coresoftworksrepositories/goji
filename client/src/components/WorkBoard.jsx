@@ -5,6 +5,7 @@ import { ClipboardIcon } from '@radix-ui/react-icons';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import ProjectSummary from './ProjectSummary';
+import { TriangleAlert } from 'lucide-react';
 
 const DraggableStoryItem = ({ story, onStatusChange, navigate, teamId, projectId, onContextMenu, getPriorityColor, sprints, selectedSprint, storyColumns }) => {
   const [{ isDragging }, drag] = useDrag(() => ({
@@ -146,6 +147,7 @@ const WorkBoard = () => {
   const [showCreateTicket, setShowCreateTicket] = useState(false);
    const [teamMembers, setTeamMembers] = useState([]);
   const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0, type: null, item: null });
+  const [sprintsEndingSoon, setSprintsEndingSoon] = useState([]);
   
   const [storyForm, setStoryForm] = useState({
     title: '',
@@ -191,6 +193,26 @@ const WorkBoard = () => {
     document.addEventListener('click', handleDocClick);
     return () => document.removeEventListener('click', handleDocClick);
   }, []);
+
+  // Check for sprints ending soon (within 7 days)
+  useEffect(() => {
+    const checkSprintsEndingSoon = () => {
+      const now = new Date();
+      const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+      
+      const endingSoon = sprints.filter(sprint => {
+        if (sprint.status !== 'ACTIVE' && sprint.status !== 'IN_PROGRESS') return false;
+        if (!sprint.endDate) return false;
+        
+        const endDate = new Date(sprint.endDate);
+        return endDate >= now && endDate <= sevenDaysFromNow;
+      });
+      
+      setSprintsEndingSoon(endingSoon);
+    };
+    
+    checkSprintsEndingSoon();
+  }, [sprints]);
 
   const loadProjectAndWorkItems = async () => {
     try {
@@ -400,6 +422,25 @@ const WorkBoard = () => {
           </button>
         </div>
       </div>
+
+      {sprintsEndingSoon.length > 0 && (
+        <div className="sprint-warning-banner">
+          <span className="warning-icon">
+            <TriangleAlert color="#ffffff" strokeWidth={1.25} />
+          </span>
+          <div className="warning-content">
+            {sprintsEndingSoon.map(sprint => {
+              const endDate = new Date(sprint.endDate);
+              const daysLeft = Math.ceil((endDate - new Date()) / (1000 * 60 * 60 * 24));
+              return (
+                <div key={sprint.id} className="warning-message">
+                  <strong>{sprint.name}</strong> ends in {daysLeft} day{daysLeft !== 1 ? 's' : ''} ({endDate.toLocaleDateString()})
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       <div className="work-board-controls">
         <div className="sprint-filter">
