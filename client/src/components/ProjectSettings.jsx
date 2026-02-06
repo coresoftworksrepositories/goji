@@ -255,6 +255,38 @@ const ProjectSettings = () => {
         </div>
 
         <div className="settings-section">
+          <h3>Default Ticket Assignee</h3>
+          <p className="section-description">
+            Set a default assignee for new tickets in this project. When creating tickets, 
+            this user will be automatically selected as the assignee.
+          </p>
+          <div className="form-group">
+            <label htmlFor="defaultAssignee">Default Assignee</label>
+            <select
+              id="defaultAssignee"
+              value={project.defaultAssigneeId || ''}
+              onChange={async (e) => {
+                try {
+                  await authService.updateProject(projectId, { defaultAssigneeId: e.target.value || null });
+                  setProject(prev => ({ ...prev, defaultAssigneeId: e.target.value || null }));
+                  setMessage('Default assignee updated successfully!');
+                } catch (error) {
+                  setMessage(error.response?.data?.error || 'Failed to update default assignee');
+                }
+              }}
+              className="form-control"
+            >
+              <option value="">No default assignee</option>
+              {projectMembers.map(member => (
+                <option key={member.id} value={member.id}>
+                  {member.username}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div className="settings-section">
           <h3>Project Members</h3>
           <div className="members-header">
             <button 

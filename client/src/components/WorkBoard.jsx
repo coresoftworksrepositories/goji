@@ -2,7 +2,135 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { authService } from '../services/auth';
 import { ClipboardIcon } from '@radix-ui/react-icons';
+import { DndProvider, useDrag, useDrop } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 import ProjectSummary from './ProjectSummary';
+
+const DraggableStoryItem = ({ story, onStatusChange, navigate, teamId, projectId, onContextMenu, getPriorityColor, sprints, selectedSprint, storyColumns }) => {
+  const [{ isDragging }, drag] = useDrag(() => ({
+    type: 'STORY',
+    item: { id: story.id, status: story.status },
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
+    }),
+  }));
+
+  return (
+    <div 
+      ref={drag}
+      className="kanban-item story-item"
+      style={{ opacity: isDragging ? 0.5 : 1, cursor: 'move' }}
+      onClick={() => navigate(`/teams/${teamId}/projects/${projectId}/stories/${story.id}`)}
+      onContextMenu={(e) => onContextMenu(e, story)}
+    >
+      <div className="item-header">
+        <span className="item-title">{story.title}</span>
+        <div 
+          className="priority-indicator"
+          style={{ backgroundColor: getPriorityColor(story.priority) }}
+        />
+      </div>
+      {story.description && (
+        <p className="item-description">{story.description}</p>
+      )}
+      <div className="item-footer">
+        {story.points && <span className="story-points">{story.points} pts</span>}
+        {story.assignee && (
+          <span className="assignee">{story.assignee.username}</span>
+        )}
+        {story.sprintId && selectedSprint === 'all' && (
+          <span className="sprint-badge">
+            Sprint: {sprints.find(s => s.id === story.sprintId)?.name || 'Unknown'}
+          </span>
+        )}
+      </div>
+      <select
+        value={story.status}
+        onChange={(e) => onStatusChange(story.id, e.target.value)}
+        onClick={(e) => e.stopPropagation()}
+        className="status-select"
+      >
+        {storyColumns.map((col) => (
+          <option key={col.status} value={col.status}>{col.title}</option>
+        ))}
+      </select>
+    </div>
+  );
+};
+
+const DraggableTicketItem = ({ ticket, onStatusChange, navigate, teamId, projectId, onContextMenu, getPriorityColor, getTypeIcon, sprints, selectedSprint, ticketColumns }) => {
+  const [{ isDragging }, drag] = useDrag(() => ({
+    type: 'TICKET',
+    item: { id: ticket.id, status: ticket.status },
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
+    }),
+  }));
+
+  return (
+    <div 
+      ref={drag}
+      className="kanban-item ticket-item"
+      style={{ opacity: isDragging ? 0.5 : 1, cursor: 'move' }}
+      onContextMenu={(e) => onContextMenu(e, ticket)}
+    >
+      <div className="item-header" 
+        onClick={() => navigate(`/teams/${teamId}/projects/${projectId}/tickets/${ticket.id}`)}
+      >
+        <span className="type-icon">{getTypeIcon(ticket.type)}</span>
+        <span className="item-title">{ticket.title}</span>
+        <div 
+          className="priority-indicator"
+          style={{ backgroundColor: getPriorityColor(ticket.priority) }}
+        />
+      </div>
+      {ticket.description && (
+        <p className="item-description">{ticket.description}</p>
+      )}
+      <div className="item-footer">
+        <span className="ticket-type">{ticket.type}</span>
+        {ticket.story && (
+          <span className="parent-story">Story: {ticket.story.title}</span>
+        )}
+        {ticket.assignee && (
+          <span className="assignee">{ticket.assignee.username}</span>
+        )}
+        {ticket.sprintId && selectedSprint === 'all' && (
+          <span className="sprint-badge">
+            Sprint: {sprints.find(s => s.id === ticket.sprintId)?.name || 'Unknown'}
+          </span>
+        )}
+      </div>
+      <select
+        value={ticket.status}
+        onChange={(e) => onStatusChange(ticket.id, e.target.value)}
+        onClick={(e) => e.stopPropagation()}
+        className="status-select"
+      >
+        {ticketColumns.map((col) => (
+          <option key={col.status} value={col.status}>{col.title}</option>
+        ))}
+      </select>
+    </div>
+  );
+};
+
+const DroppableColumn = ({ column, children, onDrop, itemType }) => {
+  const [{ isOver }, drop] = useDrop(() => ({
+    accept: itemType,
+    drop: (item) => onDrop(item, column.status),
+    collect: (monitor) => ({
+      isOver: monitor.isOver(),
+    }),
+  }));
+
+  return (
+    <div ref={drop} className={`kanban-column ${column.status.toLowerCase()} ${isOver ? 'drag-over' : ''}`} style={{ backgroundColor: isOver ? '#f0f0f0' : 'transparent' }}>
+      {children}
+    </div>
+  );
+};
+
 const WorkBoard = () => {
   const { teamId, projectId } = useParams();
   const navigate = useNavigate();
@@ -156,6 +284,18 @@ const WorkBoard = () => {
     }
   };
 
+  const handleStoryDrop = async (item, newStatus) => {
+    if (item.status !== newStatus) {
+      await handleStoryStatusChange(item.id, newStatus);
+    }
+  };
+
+  const handleTicketDrop = async (item, newStatus) => {
+    if (item.status !== newStatus) {
+      await handleTicketStatusChange(item.id, newStatus);
+    }
+  };
+
   const handleStoryContextMenu = (e, story) => {
     e.preventDefault();
     setContextMenu({ visible: true, x: e.clientX, y: e.clientY, type: 'story', item: story });
@@ -235,6 +375,7 @@ const WorkBoard = () => {
   }
 
   return (
+    <DndProvider backend={HTML5Backend}>
     <div className="work-board">
       <div className="work-board-header">
         <button 
@@ -452,7 +593,12 @@ const WorkBoard = () => {
             <h3>Stories</h3>
             <div className="kanban-columns">
               {storyColumns.map((column) => (
-                <div key={column.status} className="kanban-column">
+                <DroppableColumn 
+                  key={column.status} 
+                  column={column} 
+                  onDrop={handleStoryDrop}
+                  itemType="STORY"
+                >
                   <div className="column-header" style={{ borderColor: column.color }}>
                     <h4>{column.title}</h4>
                     <span className="count">
@@ -463,46 +609,22 @@ const WorkBoard = () => {
                     {getFilteredStories()
                       .filter(story => story.status === column.status)
                       .map((story) => (
-                        <div 
-                          key={story.id} 
-                          className="kanban-item story-item"
-                          onClick={() => navigate(`/teams/${teamId}/projects/${projectId}/stories/${story.id}`)}
-                          onContextMenu={(e) => handleStoryContextMenu(e, story)}
-                        >
-                          <div className="item-header">
-                            <span className="item-title">{story.title}</span>
-                            <div 
-                              className="priority-indicator"
-                              style={{ backgroundColor: getPriorityColor(story.priority) }}
-                            />
-                          </div>
-                          {story.description && (
-                            <p className="item-description">{story.description}</p>
-                          )}
-                          <div className="item-footer">
-                            {story.points && <span className="story-points">{story.points} pts</span>}
-                            {story.assignee && (
-                              <span className="assignee">{story.assignee.username}</span>
-                            )}
-                            {story.sprintId && selectedSprint === 'all' && (
-                              <span className="sprint-badge">
-                                Sprint: {sprints.find(s => s.id === story.sprintId)?.name || 'Unknown'}
-                              </span>
-                            )}
-                          </div>
-                          <select
-                            value={story.status}
-                            onChange={(e) => handleStoryStatusChange(story.id, e.target.value)}
-                            className="status-select"
-                          >
-                            {storyColumns.map((col) => (
-                              <option key={col.status} value={col.status}>{col.title}</option>
-                            ))}
-                          </select>
-                        </div>
+                        <DraggableStoryItem
+                          key={story.id}
+                          story={story}
+                          onStatusChange={handleStoryStatusChange}
+                          navigate={navigate}
+                          teamId={teamId}
+                          projectId={projectId}
+                          onContextMenu={handleStoryContextMenu}
+                          getPriorityColor={getPriorityColor}
+                          sprints={sprints}
+                          selectedSprint={selectedSprint}
+                          storyColumns={storyColumns}
+                        />
                       ))}
                   </div>
-                </div>
+                </DroppableColumn>
               ))}
             </div>
           </div>
@@ -512,7 +634,12 @@ const WorkBoard = () => {
             <h3>Tickets</h3>
             <div className="kanban-columns">
               {ticketColumns.map((column) => (
-                <div key={column.status} className="kanban-column">
+                <DroppableColumn 
+                  key={column.status} 
+                  column={column} 
+                  onDrop={handleTicketDrop}
+                  itemType="TICKET"
+                >
                   <div className="column-header" style={{ borderColor: column.color }}>
                     <h4>{column.title}</h4>
                     <span className="count">
@@ -523,50 +650,23 @@ const WorkBoard = () => {
                     {getFilteredTickets()
                       .filter(ticket => ticket.status === column.status)
                       .map((ticket) => (
-                        <div 
-                          key={ticket.id} 
-                          className="kanban-item ticket-item"
-                          onClick={() => navigate(`/teams/${teamId}/projects/${projectId}/tickets/${ticket.id}`)}
-                          onContextMenu={(e) => handleTicketContextMenu(e, ticket)}
-                        >
-                          <div className="item-header">
-                            <span className="type-icon">{getTypeIcon(ticket.type)}</span>
-                            <span className="item-title">{ticket.title}</span>
-                            <div 
-                              className="priority-indicator"
-                              style={{ backgroundColor: getPriorityColor(ticket.priority) }}
-                            />
-                          </div>
-                          {ticket.description && (
-                            <p className="item-description">{ticket.description}</p>
-                          )}
-                          <div className="item-footer">
-                            <span className="ticket-type">{ticket.type}</span>
-                            {ticket.story && (
-                              <span className="parent-story">Story: {ticket.story.title}</span>
-                            )}
-                            {ticket.assignee && (
-                              <span className="assignee">{ticket.assignee.username}</span>
-                            )}
-                            {ticket.sprintId && selectedSprint === 'all' && (
-                              <span className="sprint-badge">
-                                Sprint: {sprints.find(s => s.id === ticket.sprintId)?.name || 'Unknown'}
-                              </span>
-                            )}
-                          </div>
-                          <select
-                            value={ticket.status}
-                            onChange={(e) => handleTicketStatusChange(ticket.id, e.target.value)}
-                            className="status-select"
-                          >
-                            {ticketColumns.map((col) => (
-                              <option key={col.status} value={col.status}>{col.title}</option>
-                            ))}
-                          </select>
-                        </div>
+                        <DraggableTicketItem
+                          key={ticket.id}
+                          ticket={ticket}
+                          onStatusChange={handleTicketStatusChange}
+                          navigate={navigate}
+                          teamId={teamId}
+                          projectId={projectId}
+                          onContextMenu={handleTicketContextMenu}
+                          getPriorityColor={getPriorityColor}
+                          getTypeIcon={getTypeIcon}
+                          sprints={sprints}
+                          selectedSprint={selectedSprint}
+                          ticketColumns={ticketColumns}
+                        />
                       ))}
                   </div>
-                </div>
+                </DroppableColumn>
               ))}
             </div>
           </div>
@@ -648,6 +748,7 @@ const WorkBoard = () => {
         </div>
       )}
     </div>
+    </DndProvider>
   );
 };
 

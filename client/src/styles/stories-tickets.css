@@ -381,6 +381,62 @@
   align-self: flex-start;
 }
 
+/* Mention Dropdown Styles */
+.mention-dropdown {
+  position: absolute;
+  bottom: 100%;
+  left: 1rem;
+  right: 1rem;
+  margin-bottom: 0.5rem;
+  background-color: #2a2a2a;
+  border: 1px solid #444;
+  border-radius: 6px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1000;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.mention-item {
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  border-bottom: 1px solid #333;
+  transition: background-color 0.15s;
+}
+
+.mention-item:last-child {
+  border-bottom: none;
+}
+
+.mention-item:hover,
+.mention-item.selected {
+  background-color: #3a3a3a;
+}
+
+.mention-item.mention-no-results {
+  color: #888;
+  cursor: default;
+  font-style: italic;
+}
+
+.mention-item.mention-no-results:hover {
+  background-color: transparent;
+}
+
+.mention-username {
+  color: #00A3BF;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.mention-email {
+  color: #888;
+  font-size: 0.85rem;
+}
+
 /* Work Log Section Styles */
 .work-log-section {
   display: flex;

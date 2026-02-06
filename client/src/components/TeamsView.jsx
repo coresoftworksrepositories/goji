@@ -52,7 +52,7 @@ const TeamsView = () => {
 
   return (
     <div className="container">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+      <div className="container-team" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <div className="your-teams">Your Teams</div>
         <button onClick={() => setShowCreateForm(true)}>Create Team</button>
       </div>
