@@ -4,7 +4,7 @@ const ticketsController = {
   // Create a new ticket
   async createTicket(req, res) {
     try {
-      const { title, description, type, priority, status, storyId, reporterId, assigneeId, sprintId, startDate, dueDate } = req.body;
+      const { title, description, type, priority, status, storyId, reporterId, assigneeId, sprintId, startDate, dueDate, parentTicketId } = req.body;
 
       if (!title) {
         return res.status(400).json({ error: 'Ticket title is required' });
@@ -74,6 +74,7 @@ const ticketsController = {
           status: status || 'OPEN',
           projectId,
           storyId: storyId ? storyId : null,
+          parentTicketId: parentTicketId ? parentTicketId : null,
           reporterId: reporterId || req.user.userId,
           createdById: req.user.userId,
           assigneeId,
@@ -89,6 +90,12 @@ const ticketsController = {
             }
           },
           story: {
+            select: {
+              id: true,
+              title: true
+            }
+          },
+          parentTicket: {
             select: {
               id: true,
               title: true
@@ -115,6 +122,14 @@ const ticketsController = {
               id: true,
               name: true,
               status: true
+            }
+          },
+          subtickets: {
+            select: {
+              id: true,
+              title: true,
+              status: true,
+              type: true
             }
           }
         }
@@ -311,6 +326,28 @@ const ticketsController = {
               title: true
             }
           },
+          parentTicket: {
+            select: {
+              id: true,
+              title: true,
+              status: true
+            }
+          },
+          subtickets: {
+            select: {
+              id: true,
+              title: true,
+              status: true,
+              type: true,
+              priority: true,
+              assignee: {
+                select: {
+                  id: true,
+                  username: true
+                }
+              }
+            }
+          },
           reporter: {
             select: {
               id: true,
@@ -366,7 +403,7 @@ const ticketsController = {
   async updateTicket(req, res) {
     try {
       const ticketId = req.params.ticketId;
-      const { title, description, type, priority, status, assigneeId, storyId, sprintId, startDate, dueDate } = req.body;
+      const { title, description, type, priority, status, assigneeId, storyId, sprintId, startDate, dueDate, parentTicketId } = req.body;
 
       const ticket = await prisma.ticket.findUnique({
         where: { id: ticketId },
@@ -397,6 +434,15 @@ const ticketsController = {
         return res.status(403).json({ error: 'Access denied' });
       }
 
+      // Handle sprint change - add old sprint to previousSprints
+      let previousSprints = ticket.previousSprints ? JSON.parse(ticket.previousSprints) : [];
+      if (sprintId !== undefined && ticket.sprintId && ticket.sprintId !== sprintId) {
+        // Sprint is changing and there was a previous sprint
+        if (!previousSprints.includes(ticket.sprintId)) {
+          previousSprints.push(ticket.sprintId);
+        }
+      }
+
       const updatedTicket = await prisma.ticket.update({
         where: { id: ticketId },
         data: {
@@ -406,8 +452,12 @@ const ticketsController = {
           ...(priority && { priority }),
           ...(status && { status }),
           ...(assigneeId !== undefined && { assigneeId: assigneeId ? assigneeId : null }),
-          ...(sprintId !== undefined && { sprintId: sprintId ? sprintId : null }),
+          ...(sprintId !== undefined && { 
+            sprintId: sprintId ? sprintId : null,
+            previousSprints: JSON.stringify(previousSprints)
+          }),
           ...(storyId !== undefined && { storyId: storyId ? storyId : null }),
+          ...(parentTicketId !== undefined && { parentTicketId: parentTicketId ? parentTicketId : null }),
           ...(startDate !== undefined && { startDate: startDate ? new Date(startDate) : null }),
           ...(dueDate !== undefined && { dueDate: dueDate ? new Date(dueDate) : null })
         },
@@ -422,6 +472,21 @@ const ticketsController = {
             select: {
               id: true,
               title: true
+            }
+          },
+          parentTicket: {
+            select: {
+              id: true,
+              title: true,
+              status: true
+            }
+          },
+          subtickets: {
+            select: {
+              id: true,
+              title: true,
+              status: true,
+              type: true
             }
           },
           reporter: {
@@ -816,6 +881,134 @@ const ticketsController = {
     }
   },
 
+  // Update ticket comment
+  async updateTicketComment(req, res) {
+    try {
+      const commentId = req.params.commentId;
+      const { content } = req.body;
+
+      if (!content || !content.trim()) {
+        return res.status(400).json({ error: 'Comment content is required' });
+      }
+
+      // Check if comment exists
+      const comment = await prisma.ticketComment.findUnique({
+        where: { id: commentId },
+        include: {
+          ticket: {
+            include: {
+              project: {
+                select: {
+                  teamId: true
+                }
+              }
+            }
+          }
+        }
+      });
+
+      if (!comment) {
+        return res.status(404).json({ error: 'Comment not found' });
+      }
+
+      // Check if user is a team member
+      const teamMember = await prisma.teamMember.findUnique({
+        where: {
+          teamId_userId: {
+            teamId: comment.ticket.project.teamId,
+            userId: req.user.userId
+          }
+        }
+      });
+
+      if (!teamMember) {
+        return res.status(403).json({ error: 'Access denied' });
+      }
+
+      // Check if user is the comment author
+      if (comment.authorId !== req.user.userId) {
+        return res.status(403).json({ error: 'You can only edit your own comments' });
+      }
+
+      const updatedComment = await prisma.ticketComment.update({
+        where: { id: commentId },
+        data: {
+          content: content.trim()
+        },
+        include: {
+          author: {
+            select: {
+              id: true,
+              username: true,
+              firstName: true,
+              lastName: true
+            }
+          }
+        }
+      });
+
+      res.json({ comment: updatedComment });
+    } catch (error) {
+      console.error('Update ticket comment error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  },
+
+  // Delete ticket comment
+  async deleteTicketComment(req, res) {
+    try {
+      const commentId = req.params.commentId;
+
+      // Check if comment exists
+      const comment = await prisma.ticketComment.findUnique({
+        where: { id: commentId },
+        include: {
+          ticket: {
+            include: {
+              project: {
+                select: {
+                  teamId: true
+                }
+              }
+            }
+          }
+        }
+      });
+
+      if (!comment) {
+        return res.status(404).json({ error: 'Comment not found' });
+      }
+
+      // Check if user is a team member
+      const teamMember = await prisma.teamMember.findUnique({
+        where: {
+          teamId_userId: {
+            teamId: comment.ticket.project.teamId,
+            userId: req.user.userId
+          }
+        }
+      });
+
+      if (!teamMember) {
+        return res.status(403).json({ error: 'Access denied' });
+      }
+
+      // Check if user is the comment author
+      if (comment.authorId !== req.user.userId) {
+        return res.status(403).json({ error: 'You can only delete your own comments' });
+      }
+
+      await prisma.ticketComment.delete({
+        where: { id: commentId }
+      });
+
+      res.json({ message: 'Comment deleted successfully' });
+    } catch (error) {
+      console.error('Delete ticket comment error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  },
+
   // Get ticket work logs
   async getTicketWorkLogs(req, res) {
     try {
@@ -950,6 +1143,73 @@ const ticketsController = {
       res.status(201).json({ workLog });
     } catch (error) {
       console.error('Add ticket work log error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  },
+
+  // Get previous sprints for a ticket
+  async getTicketPreviousSprints(req, res) {
+    try {
+      const ticketId = req.params.ticketId;
+
+      // Check if ticket exists and user has access
+      const ticket = await prisma.ticket.findUnique({
+        where: { id: ticketId },
+        include: {
+          project: {
+            select: {
+              teamId: true
+            }
+          }
+        }
+      });
+
+      if (!ticket) {
+        return res.status(404).json({ error: 'Ticket not found' });
+      }
+
+      // Check if user is a team member
+      const teamMember = await prisma.teamMember.findUnique({
+        where: {
+          teamId_userId: {
+            teamId: ticket.project.teamId,
+            userId: req.user.userId
+          }
+        }
+      });
+
+      if (!teamMember) {
+        return res.status(403).json({ error: 'Access denied' });
+      }
+
+      // Parse previous sprint IDs and fetch sprint details
+      const previousSprintIds = ticket.previousSprints ? JSON.parse(ticket.previousSprints) : [];
+      
+      if (previousSprintIds.length === 0) {
+        return res.json({ previousSprints: [] });
+      }
+
+      const previousSprints = await prisma.sprint.findMany({
+        where: {
+          id: {
+            in: previousSprintIds
+          }
+        },
+        select: {
+          id: true,
+          name: true,
+          status: true,
+          startDate: true,
+          endDate: true
+        },
+        orderBy: {
+          endDate: 'desc'
+        }
+      });
+
+      res.json({ previousSprints });
+    } catch (error) {
+      console.error('Get ticket previous sprints error:', error);
       res.status(500).json({ error: 'Internal server error' });
     }
   }

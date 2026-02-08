@@ -6,7 +6,8 @@ import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import ProjectSummary from './ProjectSummary';
 import { TriangleAlert } from 'lucide-react';
-
+import CreateTicketModal from './CreateTicketModal';
+import CreateStoryModal from './CreateStoryModal';
 const DraggableStoryItem = ({ story, onStatusChange, navigate, teamId, projectId, onContextMenu, getPriorityColor, sprints, selectedSprint, storyColumns }) => {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: 'STORY',
@@ -71,13 +72,14 @@ const DraggableTicketItem = ({ ticket, onStatusChange, navigate, teamId, project
   return (
     <div 
       ref={drag}
-      className="kanban-item ticket-item"
+      className={`kanban-item ticket-item ${ticket.parentTicketId ? 'subticket' : ''}`}
       style={{ opacity: isDragging ? 0.5 : 1, cursor: 'move' }}
       onContextMenu={(e) => onContextMenu(e, ticket)}
     >
       <div className="item-header" 
         onClick={() => navigate(`/teams/${teamId}/projects/${projectId}/tickets/${ticket.id}`)}
       >
+        {ticket.parentTicketId && <span className="subticket-indicator">↳</span>}
         <span className="type-icon">{getTypeIcon(ticket.type)}</span>
         <span className="item-title">{ticket.title}</span>
         <div 
@@ -90,6 +92,9 @@ const DraggableTicketItem = ({ ticket, onStatusChange, navigate, teamId, project
       )}
       <div className="item-footer">
         <span className="ticket-type">{ticket.type}</span>
+        {ticket.parentTicketId && (
+          <span className="subticket-badge">Subticket</span>
+        )}
         {ticket.story && (
           <span className="parent-story">Story: {ticket.story.title}</span>
         )}
@@ -148,6 +153,8 @@ const WorkBoard = () => {
    const [teamMembers, setTeamMembers] = useState([]);
   const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0, type: null, item: null });
   const [sprintsEndingSoon, setSprintsEndingSoon] = useState([]);
+  const [createLoading, setCreateLoading] = useState(false);
+  const [createError, setCreateError] = useState(null);
   
   const [storyForm, setStoryForm] = useState({
     title: '',
@@ -490,141 +497,36 @@ const WorkBoard = () => {
 
       {/* Create Story Modal */}
       {showCreateStory && (
-        <div className="modal-overlay">
-          <div className="modal">
-            <h3>Create New Story</h3>
-            <form onSubmit={handleCreateStory}>
-              <input
-                type="text"
-                placeholder="Story Title"
-                value={storyForm.title}
-                onChange={(e) => setStoryForm({ ...storyForm, title: e.target.value })}
-                required
-              />
-              <textarea
-                placeholder="Story Description"
-                value={storyForm.description}
-                onChange={(e) => setStoryForm({ ...storyForm, description: e.target.value })}
-                rows="3"
-              />
-              <div className="form-row">
-                <select
-                  value={storyForm.priority}
-                  onChange={(e) => setStoryForm({ ...storyForm, priority: e.target.value })}
-                >
-                  <option value="LOW">Low Priority</option>
-                  <option value="MEDIUM">Medium Priority</option>
-                  <option value="HIGH">High Priority</option>
-                  <option value="CRITICAL">Critical Priority</option>
-                </select>
-                <input
-                  type="number"
-                  placeholder="Story Points"
-                  value={storyForm.points}
-                  onChange={(e) => setStoryForm({ ...storyForm, points: e.target.value })}
-                  min="1"
-                  max="21"
-                />
-              </div>
-              <select
-                value={storyForm.sprintId}
-                onChange={(e) => setStoryForm({ ...storyForm, sprintId: e.target.value })}
-              >
-                <option value="">No Sprint (Backlog)</option>
-                {sprints.filter(sprint => sprint.status !== 'COMPLETED').map((sprint) => (
-                  <option key={sprint.id} value={sprint.id}>
-                    {sprint.name} ({sprint.status})
-                  </option>
-                ))}
-              </select>
-              <div className="modal-buttons">
-                <button type="submit">Create Story</button>
-                <button type="button" onClick={() => setShowCreateStory(false)}>Cancel</button>
-              </div>
-            </form>
-          </div>
-        </div>
+        <CreateStoryModal
+          projectId={projectId}
+          setShowCreateModal={setShowCreateStory}
+          createForm={storyForm}
+          setCreateForm={setStoryForm}
+          createLoading={createLoading}
+          setCreateLoading={setCreateLoading}
+          createError={createError}
+          setCreateError={setCreateError}
+          loadStoryData={loadProjectAndWorkItems}
+          sprints={sprints}
+        />
       )}
 
       {/* Create Ticket Modal */}
       {showCreateTicket && (
-        <div className="modal-overlay">
-          <div className="modal">
-            <h3>Create New Ticket</h3>
-            <form onSubmit={handleCreateTicket}>
-              <input
-                type="text"
-                placeholder="Ticket Title"
-                value={ticketForm.title}
-                onChange={(e) => setTicketForm({ ...ticketForm, title: e.target.value })}
-                required
-              />
-              <textarea
-                placeholder="Ticket Description"
-                value={ticketForm.description}
-                onChange={(e) => setTicketForm({ ...ticketForm, description: e.target.value })}
-                rows="3"
-              />
-              <div className="form-row">
-                <select
-                  value={ticketForm.type}
-                  onChange={(e) => setTicketForm({ ...ticketForm, type: e.target.value })}
-                >
-                  <option value="TASK">Task</option>
-                  <option value="BUG">Bug</option>
-                  <option value="FEATURE">Feature</option>
-                  <option value="IMPROVEMENT">Improvement</option>
-                </select>
-                <select
-                  value={ticketForm.priority}
-                  onChange={(e) => setTicketForm({ ...ticketForm, priority: e.target.value })}
-                >
-                  <option value="LOW">Low Priority</option>
-                  <option value="MEDIUM">Medium Priority</option>
-                  <option value="HIGH">High Priority</option>
-                  <option value="CRITICAL">Critical Priority</option>
-                </select>
-              </div>
-              <select
-                value={ticketForm.storyId}
-                onChange={(e) => setTicketForm({ ...ticketForm, storyId: e.target.value })}
-              >
-                <option value="">No Parent Story</option>
-                {stories.map((story) => (
-                  <option key={story.id} value={story.id}>
-                    {story.title}
-                  </option>
-                ))}
-              </select>
-              <select
-                value={ticketForm.assigneeId}
-                onChange={(e) => setTicketForm({ ...ticketForm, assigneeId: e.target.value })}
-              >
-                <option value="">Unassigned</option>
-                {teamMembers.map((member) => (
-                  <option key={member.id} value={member.id}>
-                    {member.username}
-                  </option>
-                ))}
-              </select>
-              <select
-                value={ticketForm.sprintId}
-                onChange={(e) => setTicketForm({ ...ticketForm, sprintId: e.target.value })}
-              >
-                <option value="">No Sprint (Backlog)</option>
-                {sprints.filter(sprint => sprint.status !== 'COMPLETED').map((sprint) => (
-                  <option key={sprint.id} value={sprint.id}>
-                    {sprint.name} ({sprint.status})
-                  </option>
-                ))}
-              </select>
-              <div className="modal-buttons">
-                <button type="submit">Create Ticket</button>
-                <button type="button" onClick={() => setShowCreateTicket(false)}>Cancel</button>
-              </div>
-            </form>
-          </div>
-        </div>
+        <CreateTicketModal
+          projectId={projectId}
+          storyId={null}
+          setShowCreateModal={setShowCreateTicket}
+          createForm={ticketForm}
+          setCreateForm={setTicketForm}
+          createLoading={createLoading}
+          setCreateLoading={setCreateLoading}
+          createError={createError}
+          setCreateError={setCreateError}
+          loadStoryData={loadProjectAndWorkItems}
+          projectMembers={teamMembers}
+          project={selectedProject}
+        />
       )}
 
       {activeView === 'board' ? (

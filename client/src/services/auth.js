@@ -205,9 +205,9 @@ export const authService = {
   },
 
   // Work Items
-  async createStory(projectId, title, description, priority, points, assigneeId) {
+  async createStory(projectId, title, description, priority, points, assigneeId, sprintId) {
     const response = await api.post(`/api/projects/${projectId}/stories`, {
-      title, description, priority, points, assigneeId
+      title, description, priority, points, assigneeId, sprintId
     });
     return response.data.story;
   },
@@ -223,9 +223,9 @@ export const authService = {
     return response.data.story;
   },
 
-  async createTicket(projectId, title, description, type, priority, storyId, assigneeId) {
+  async createTicket(projectId, title, description, type, priority, storyId, assigneeId, sprintId, parentTicketId) {
     const response = await api.post(`/api/projects/${projectId}/tickets`, {
-      title, description, type, priority, storyId, assigneeId
+      title, description, type, priority, storyId, assigneeId, sprintId, parentTicketId
     });
     return response.data.ticket;
   },
@@ -369,6 +369,16 @@ export const authService = {
     return response.data.comment;
   },
 
+  async updateTicketComment(commentId, content) {
+    const response = await api.put(`/api/tickets/comments/${commentId}`, { content });
+    return response.data.comment;
+  },
+
+  async deleteTicketComment(commentId) {
+    const response = await api.delete(`/api/tickets/comments/${commentId}`);
+    return response.data;
+  },
+
   // Work log methods
   async getTicketWorkLogs(ticketId) {
     const response = await api.get(`/api/tickets/${ticketId}/worklogs`);
@@ -388,6 +398,11 @@ export const authService = {
   async deleteTicketWorkLog(workLogId) {
     const response = await api.delete(`/api/worklogs/${workLogId}`);
     return response.data;
+  },
+
+  async getTicketPreviousSprints(ticketId) {
+    const response = await api.get(`/api/tickets/${ticketId}/previous-sprints`);
+    return response.data.previousSprints;
   },
 
   // Sprint methods

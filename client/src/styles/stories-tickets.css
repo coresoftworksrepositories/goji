@@ -54,7 +54,7 @@
   border-radius: 4px;
   font-size: 1.5rem;
   font-weight: 600;
-  width: 100%;
+  width: 95%;
 }
 
 .story-actions, .ticket-actions {
@@ -130,7 +130,7 @@
 
 .ticket-header {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   gap: 0.75rem;
   margin-bottom: 0.5rem;
 }
@@ -201,6 +201,33 @@
 
 .detail-item div {
   color: #fff;
+}
+
+/* Previous Sprints Styles */
+.previous-sprints-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.previous-sprint-item {
+  padding: 0.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.previous-sprint-item .sprint-name {
+  color: #fff;
+  font-weight: 500;
+}
+
+.previous-sprint-item .sprint-status {
+  color: #aaa;
+  font-size: 0.85rem;
 }
 
 /* Time Logging Styles */
@@ -678,6 +705,19 @@
   margin-bottom: 1rem;
 }
 
+button.btn.btn-xs.btn-secondary.pencil-line {
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+}
+
+.comment-actions {
+    display: flex;
+    gap: 8px;
+}
+
 /* Responsive design for smaller screens */
 @media (max-width: 768px) {
   .work-log-inputs {
@@ -696,4 +736,101 @@
   .ticket-actions {
     justify-content: flex-start;
   }
+}
+
+/* Subtickets and Parent Ticket Styles */
+.subtickets-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.subticket-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background-color: #2a2a2a;
+  border: 1px solid #444;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.subticket-item:hover {
+  background-color: #333;
+  border-color: #007bff;
+}
+
+.subticket-icon {
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+}
+
+.subticket-title {
+  flex: 1;
+  color: #fff;
+  font-weight: 500;
+}
+
+.subticket-status {
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  background-color: #1a1a1a;
+}
+
+.ticket-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background-color: #2a2a2a;
+  border: 1px solid #444;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ticket-link:hover {
+  background-color: #333;
+  border-color: #007bff;
+}
+
+.ticket-key {
+  background-color: #007bff;
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.ticket-title {
+  flex: 1;
+  color: #fff;
+  font-weight: 500;
+}
+
+.ticket-status {
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  background-color: #1a1a1a;
+}
+
+.ticket-actions-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #333;
+}
+
+.ticket-actions-section .btn {
+  width: 100%;
 }
