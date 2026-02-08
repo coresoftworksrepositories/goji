@@ -18,9 +18,14 @@ router.delete('/:ticketId', ticketsController.deleteTicket);
 // Comments routes
 router.get('/:ticketId/comments', ticketsController.getTicketComments);
 router.post('/:ticketId/comments', ticketsController.addTicketComment);
+router.put('/comments/:commentId', ticketsController.updateTicketComment);
+router.delete('/comments/:commentId', ticketsController.deleteTicketComment);
 
 // Work logs routes
 router.get('/:ticketId/worklogs', ticketsController.getTicketWorkLogs);
 router.post('/:ticketId/worklogs', ticketsController.addTicketWorkLog);
+
+// Previous sprints route
+router.get('/:ticketId/previous-sprints', ticketsController.getTicketPreviousSprints);
 
 module.exports = router;

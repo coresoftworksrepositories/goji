@@ -1,6 +1,7 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { authService } from '../services/auth';
+import TextArea from './TextArea';
 
 export default function CreateTicketModal({
     projectId,
@@ -16,7 +17,12 @@ export default function CreateTicketModal({
     projectMembers = [],
     project
 }) {
-
+    const [showMentionDropdown, setShowMentionDropdown] = useState(false);
+    const [mentionSearch, setMentionSearch] = useState('');
+    const [mentionStartPos, setMentionStartPos] = useState(0);
+    const [selectedMentionIndex, setSelectedMentionIndex] = useState(0);
+    const descriptionTextareaRef = React.useRef(null);
+    
     // Set default assignee when modal opens if configured and assignee is a project member
     useEffect(() => {
         if (project?.defaultAssigneeId && !createForm.assigneeId) {
@@ -26,6 +32,70 @@ export default function CreateTicketModal({
             }
         }
     }, [project, projectMembers]);
+
+    const handleDescriptionChange = (e) => {
+        const value = e.target.value;
+        const cursorPos = e.target.selectionStart;
+        setCreateForm({ ...createForm, description: value });
+
+        // Check for @ mention
+        const textBeforeCursor = value.substring(0, cursorPos);
+        const lastAtIndex = textBeforeCursor.lastIndexOf('@');
+        
+        if (lastAtIndex !== -1) {
+            const textAfterAt = textBeforeCursor.substring(lastAtIndex + 1);
+            if (!textAfterAt.includes(' ')) {
+                setShowMentionDropdown(true);
+                setMentionSearch(textAfterAt.toLowerCase());
+                setMentionStartPos(lastAtIndex);
+                setSelectedMentionIndex(0);
+                return;
+            }
+        }
+        
+        setShowMentionDropdown(false);
+        setMentionSearch('');
+    };
+
+    const handleDescriptionKeyDown = (e) => {
+        if (!showMentionDropdown) return;
+
+        const filteredMembers = projectMembers.filter(member =>
+            member.username.toLowerCase().includes(mentionSearch)
+        );
+
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            setSelectedMentionIndex((prev) => 
+                prev < filteredMembers.length - 1 ? prev + 1 : prev
+            );
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            setSelectedMentionIndex((prev) => prev > 0 ? prev - 1 : 0);
+        } else if (e.key === 'Enter' && filteredMembers.length > 0) {
+            e.preventDefault();
+            selectMention(filteredMembers[selectedMentionIndex]);
+        } else if (e.key === 'Escape') {
+            setShowMentionDropdown(false);
+            setMentionSearch('');
+        }
+    };
+
+    const selectMention = (member) => {
+        const beforeMention = createForm.description.substring(0, mentionStartPos);
+        const afterMention = createForm.description.substring(descriptionTextareaRef.current.selectionStart);
+        const newValue = `${beforeMention}@${member.username} ${afterMention}`;
+        setCreateForm({ ...createForm, description: newValue });
+        setShowMentionDropdown(false);
+        setMentionSearch('');
+        
+        // Set cursor position after the mention
+        setTimeout(() => {
+            const newCursorPos = mentionStartPos + member.username.length + 2;
+            descriptionTextareaRef.current.setSelectionRange(newCursorPos, newCursorPos);
+            descriptionTextareaRef.current.focus();
+        }, 0);
+    };
 
     const onClose = () => {
         setShowCreateModal(false);
@@ -73,10 +143,15 @@ export default function CreateTicketModal({
                         </div>
                         <div className="form-group">
                             <label>Description</label>
-                            <textarea
-                                className="form-control"
+                            <TextArea
                                 value={createForm.description}
-                                onChange={(e) => setCreateForm({ ...createForm, description: e.target.value })}
+                                onChange={(text) => setCreateForm({ ...createForm, description: text })}
+                                placeholder="Enter description... (Type @ to mention someone)"
+                                showToolbar={true}
+                                showMentions={true}
+                                projectMembers={projectMembers}
+                                minHeight="150px"
+                                maxHeight="400px"
                             />
                         </div>
                         <div className="form-row">

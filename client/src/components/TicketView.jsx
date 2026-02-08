@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { authService } from '../services/auth';
 import { ClipboardIcon } from '@radix-ui/react-icons';
+import {Trash, PencilLine} from 'lucide-react';
+import TextArea from './TextArea';
 
 const TicketView = () => {
   const { teamId, projectId, ticketId } = useParams();
@@ -32,6 +34,22 @@ const TicketView = () => {
   const [mentionStartPos, setMentionStartPos] = useState(0);
   const [selectedMentionIndex, setSelectedMentionIndex] = useState(0);
   const commentTextareaRef = React.useRef(null);
+  const [editingComment, setEditingComment] = useState(null);
+  const [editCommentForm, setEditCommentForm] = useState({ content: '' });
+  const [updatingComment, setUpdatingComment] = useState(false);
+  const [previousSprints, setPreviousSprints] = useState([]);
+  const [showCreateSubticket, setShowCreateSubticket] = useState(false);
+  const [subticketForm, setSubticketForm] = useState({
+    title: '',
+    description: '',
+    type: 'TASK',
+    priority: 'MEDIUM',
+    assigneeId: ''
+  });
+  const [creatingSubticket, setCreatingSubticket] = useState(false);
+  const [showMoveToParent, setShowMoveToParent] = useState(false);
+  const [availableTickets, setAvailableTickets] = useState([]);
+  const [selectedParentId, setSelectedParentId] = useState('');
 
   useEffect(() => {
     loadTicketData();
@@ -40,13 +58,14 @@ const TicketView = () => {
   const loadTicketData = async () => {
     try {
       setLoading(true);
-      const [ticketData, membersData, storiesData, sprintsData, commentsData, workLogsData] = await Promise.all([
+      const [ticketData, membersData, storiesData, sprintsData, commentsData, workLogsData, prevSprints] = await Promise.all([
         authService.getTicket(ticketId),
         authService.getProjectMembers(projectId),
         authService.getProjectStories(projectId),
         authService.getProjectSprints(projectId),
         authService.getTicketComments(ticketId),
-        authService.getTicketWorkLogs(ticketId)
+        authService.getTicketWorkLogs(ticketId),
+        authService.getTicketPreviousSprints(ticketId)
       ]);
       
       setTicket(ticketData);
@@ -55,6 +74,7 @@ const TicketView = () => {
       setSprints(sprintsData);
       setComments(commentsData);
       setWorkLogs(workLogsData);
+      setPreviousSprints(prevSprints || []);
       setEditForm({
         title: ticketData.title,
         description: ticketData.description || '',
@@ -319,6 +339,114 @@ const TicketView = () => {
     }
   };
 
+  const handleEditComment = (comment) => {
+    setEditingComment(comment.id);
+    setEditCommentForm({ content: comment.content });
+  };
+
+  const handleUpdateComment = async (commentId) => {
+    if (!editCommentForm.content.trim()) {
+      alert('Comment cannot be empty');
+      return;
+    }
+
+    try {
+      setUpdatingComment(true);
+      await authService.updateTicketComment(commentId, editCommentForm.content);
+      setEditingComment(null);
+      setEditCommentForm({ content: '' });
+      // Reload comments
+      const commentsData = await authService.getTicketComments(ticketId);
+      setComments(commentsData);
+    } catch (error) {
+      console.error('Error updating comment:', error);
+      alert('Failed to update comment. Please try again.');
+    } finally {
+      setUpdatingComment(false);
+    }
+  };
+
+  const handleCancelEditComment = () => {
+    setEditingComment(null);
+    setEditCommentForm({ content: '' });
+  };
+
+  const handleDeleteComment = async (commentId) => {
+    if (!confirm('Are you sure you want to delete this comment?')) {
+      return;
+    }
+
+    try {
+      await authService.deleteTicketComment(commentId);
+      // Reload comments
+      const commentsData = await authService.getTicketComments(ticketId);
+      setComments(commentsData);
+    } catch (error) {
+      console.error('Error deleting comment:', error);
+      alert('Failed to delete comment. Please try again.');
+    }
+  };
+
+  const handleCreateSubticket = async (e) => {
+    e.preventDefault();
+    try {
+      setCreatingSubticket(true);
+      await authService.createTicket(
+        projectId,
+        subticketForm.title,
+        subticketForm.description,
+        subticketForm.type,
+        subticketForm.priority,
+        ticket.storyId,
+        subticketForm.assigneeId || null,
+        ticket.sprintId,
+        ticketId // parentTicketId
+      );
+      setShowCreateSubticket(false);
+      setSubticketForm({
+        title: '',
+        description: '',
+        type: 'TASK',
+        priority: 'MEDIUM',
+        assigneeId: ''
+      });
+      await loadTicketData();
+    } catch (error) {
+      console.error('Error creating subticket:', error);
+      alert('Failed to create subticket. Please try again.');
+    } finally {
+      setCreatingSubticket(false);
+    }
+  };
+
+  const handleMoveToParent = async (e) => {
+    e.preventDefault();
+    try {
+      await authService.updateTicket(ticketId, {
+        parentTicketId: selectedParentId || null
+      });
+      setShowMoveToParent(false);
+      setSelectedParentId('');
+      await loadTicketData();
+    } catch (error) {
+      console.error('Error moving ticket:', error);
+      alert('Failed to move ticket. Please try again.');
+    }
+  };
+
+  const loadAvailableParentTickets = async () => {
+    try {
+      const tickets = await authService.getProjectTickets(projectId);
+      // Filter out current ticket and its subtickets to prevent circular relationships
+      const subticketIds = ticket.subtickets?.map(st => st.id) || [];
+      setAvailableTickets(tickets.filter(t => 
+        t.id !== ticketId && !subticketIds.includes(t.id)
+      ));
+    } catch (error) {
+      console.error('Error loading tickets:', error);
+    }
+  };
+
   const getPriorityColor = (priority) => {
     switch (priority) {
       case 'CRITICAL': return '#dc3545';
@@ -360,6 +488,21 @@ const TicketView = () => {
 
   const relatedTickets = (
     <>
+      {ticket.parentTicket && (
+        <div className="ticket-section">
+          <h3>Parent Ticket</h3>
+          <div
+            className="ticket-link"
+            onClick={() => navigate(`/teams/${teamId}/projects/${projectId}/tickets/${ticket.parentTicket.id}`)}
+          >
+            <span className="ticket-key">TICKET-{ticket.parentTicket.id}</span>
+            <span className="ticket-title">{ticket.parentTicket.title}</span>
+            <span className="ticket-status" style={{ color: getStatusColor(ticket.parentTicket.status) }}>
+              {ticket.parentTicket.status}
+            </span>
+          </div>
+        </div>
+      )}
       {ticket.story && (
         <div className="ticket-section">
           <h3>Parent Story</h3>
@@ -372,6 +515,43 @@ const TicketView = () => {
           </div>
         </div>
       )}
+      {ticket.subtickets && ticket.subtickets.length > 0 && (
+        <div className="ticket-section">
+          <h3>Subtickets ({ticket.subtickets.length})</h3>
+          <div className="subtickets-list">
+            {ticket.subtickets.map(subticket => (
+              <div
+                key={subticket.id}
+                className="subticket-item"
+                onClick={() => navigate(`/teams/${teamId}/projects/${projectId}/tickets/${subticket.id}`)}
+              >
+                <span className="subticket-icon">{getTypeIcon(subticket.type)}</span>
+                <span className="subticket-title">{subticket.title}</span>
+                <span className="subticket-status" style={{ color: getStatusColor(subticket.status) }}>
+                  {subticket.status}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+      <div className="ticket-actions-section">
+        <button
+          onClick={() => setShowCreateSubticket(true)}
+          className="btn btn-sm btn-secondary"
+        >
+          Create Subticket
+        </button>
+        <button
+          onClick={() => {
+            loadAvailableParentTickets();
+            setShowMoveToParent(true);
+          }}
+          className="btn btn-sm btn-secondary"
+        >
+          {ticket.parentTicket ? 'Change Parent' : 'Move to Parent'}
+        </button>
+      </div>
     </>
   );
 
@@ -383,53 +563,95 @@ const TicketView = () => {
         ) : (
           comments.map(comment => (
             <div key={comment.id} className="comment-item">
-              <div className="comment-header">
-                <span className="comment-author">{comment.author?.username || 'Unknown'}</span>
-                <span className="comment-date">
-                  {new Date(comment.createdAt).toLocaleString()}
-                </span>
-              </div>
-              <div className="comment-content">{comment.content}</div>
+              {editingComment === comment.id ? (
+                // Edit mode
+                <div className="comment-edit">
+                  <div className="comment-header">
+                    <span className="comment-author">{comment.author?.username || 'Unknown'}</span>
+                    <span className="comment-date">
+                      {new Date(comment.createdAt).toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="comment-edit-inputs">
+                    <TextArea
+                      value={editCommentForm.content}
+                      onChange={(text) => setEditCommentForm({ content: text })}
+                      placeholder="Edit comment..."
+                      showToolbar={true}
+                      showMentions={true}
+                      projectMembers={projectMembers}
+                      disabled={updatingComment}
+                      minHeight="100px"
+                      maxHeight="300px"
+                    />
+                  </div>
+                  <div className="comment-edit-actions">
+                    <button 
+                      onClick={() => handleUpdateComment(comment.id)}
+                      className="btn btn-sm btn-primary"
+                      disabled={updatingComment || !editCommentForm.content.trim()}
+                    >
+                      {updatingComment ? 'Saving...' : 'Save'}
+                    </button>
+                    <button 
+                      onClick={handleCancelEditComment}
+                      className="btn btn-sm btn-secondary"
+                      disabled={updatingComment}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                // View mode
+                <>
+                  <div className="comment-header">
+                    <span className="comment-author">{comment.author?.username || 'Unknown'}</span>
+                    <span className="comment-date">
+                      {new Date(comment.createdAt).toLocaleString()}
+                    </span>
+                    <div className="comment-actions">
+                      <button
+                        onClick={() => handleEditComment(comment)}
+                        className="btn btn-xs btn-secondary pencil-line"
+                        title="Edit comment"
+                      >
+                        <PencilLine color="#ffffff" strokeWidth={1.25} />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteComment(comment.id)}
+                        className="btn btn-xs btn-danger delete-comment"
+                        title="Delete comment"
+                      >
+                        <Trash color="#ffffff" strokeWidth={1.25} />
+                      </button>
+                    </div>
+                  </div>
+                  <div className="comment-content">{comment.content}</div>
+                </>
+              )}
             </div>
           ))
         )}
       </div>
       
-      <form onSubmit={handleAddComment} className="add-comment-form" style={{ position: 'relative' }}>
-        <textarea
-          ref={commentTextareaRef}
+      <form onSubmit={handleAddComment} className="add-comment-form">
+        <TextArea
           value={newComment}
-          onChange={handleCommentChange}
-          onKeyDown={handleCommentKeyDown}
+          onChange={(text) => setNewComment(text)}
           placeholder="Add a comment... (Type @ to mention someone)"
-          rows="3"
-          className="form-control"
+          showToolbar={true}
+          showMentions={true}
+          projectMembers={projectMembers}
           disabled={addingComment}
+          minHeight="100px"
+          maxHeight="300px"
         />
-        {showMentionDropdown && (
-          <div className="mention-dropdown">
-            {projectMembers
-              .filter(member => member.username.toLowerCase().includes(mentionSearch))
-              .map((member, index) => (
-                <div
-                  key={member.id}
-                  className={`mention-item ${index === selectedMentionIndex ? 'selected' : ''}`}
-                  onClick={() => selectMention(member)}
-                  onMouseEnter={() => setSelectedMentionIndex(index)}
-                >
-                  <span className="mention-username">@{member.username}</span>
-                  {member.email && <span className="mention-email">{member.email}</span>}
-                </div>
-              ))}
-            {projectMembers.filter(member => member.username.toLowerCase().includes(mentionSearch)).length === 0 && (
-              <div className="mention-item mention-no-results">No users found</div>
-            )}
-          </div>
-        )}
         <button 
           type="submit" 
           className="btn btn-primary"
           disabled={addingComment || !newComment.trim()}
+          style={{ marginTop: '8px' }}
         >
           {addingComment ? 'Adding...' : 'Add Comment'}
         </button>
@@ -469,12 +691,14 @@ const TicketView = () => {
                     </div>
                     <div className="input-group">
                       <label>Description</label>
-                      <textarea
+                      <TextArea
                         value={editWorkLogForm.description}
-                        onChange={(e) => setEditWorkLogForm({...editWorkLogForm, description: e.target.value})}
-                        rows="2"
-                        className="form-control"
+                        onChange={(text) => setEditWorkLogForm({...editWorkLogForm, description: text})}
+                        placeholder="Describe the work done..."
+                        showToolbar={false}
                         disabled={updatingWorkLog}
+                        minHeight="80px"
+                        maxHeight="200px"
                       />
                     </div>
                   </div>
@@ -546,13 +770,14 @@ const TicketView = () => {
           </div>
           <div className="input-group">
             <label>Description</label>
-            <textarea
+            <TextArea
               value={newWorkLog.description}
-              onChange={(e) => setNewWorkLog({...newWorkLog, description: e.target.value})}
+              onChange={(text) => setNewWorkLog({...newWorkLog, description: text})}
               placeholder="Describe the work done..."
-              rows="2"
-              className="form-control"
+              showToolbar={false}
               disabled={addingWorkLog}
+              minHeight="80px"
+              maxHeight="200px"
             />
           </div>
         </div>
@@ -627,11 +852,13 @@ const TicketView = () => {
           <div className="ticket-section">
             <h3>Description</h3>
             {editing ? (
-              <textarea
+              <TextArea
                 value={editForm.description}
-                onChange={(e) => setEditForm({...editForm, description: e.target.value})}
-                rows="6"
-                className="form-control"
+                onChange={(text) => setEditForm({...editForm, description: text})}
+                placeholder="Enter ticket description..."
+                showToolbar={true}
+                minHeight="150px"
+                maxHeight="400px"
               />
             ) : (
               <div className="ticket-description">
@@ -801,6 +1028,20 @@ const TicketView = () => {
               )}
             </div>
 
+            {previousSprints.length > 0 && (
+              <div className="detail-item">
+                <label>Previous Sprints</label>
+                <div className="previous-sprints-list">
+                  {previousSprints.map((sprint, index) => (
+                    <div key={sprint.id} className="previous-sprint-item">
+                      <span className="sprint-name">{sprint.name}</span>
+                      <span className="sprint-status">({sprint.status})</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="detail-item">
               <label>Start Date</label>
               {editing ? (
@@ -898,6 +1139,107 @@ const TicketView = () => {
                 Cancel
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Create Subticket Modal */}
+      {showCreateSubticket && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <h3>Create Subticket</h3>
+            <form onSubmit={handleCreateSubticket}>
+              <input
+                type="text"
+                placeholder="Subticket Title"
+                value={subticketForm.title}
+                onChange={(e) => setSubticketForm({ ...subticketForm, title: e.target.value })}
+                required
+              />
+              <textarea
+                placeholder="Description"
+                value={subticketForm.description}
+                onChange={(e) => setSubticketForm({ ...subticketForm, description: e.target.value })}
+                rows="3"
+              />
+              <div className="form-row">
+                <select
+                  value={subticketForm.type}
+                  onChange={(e) => setSubticketForm({ ...subticketForm, type: e.target.value })}
+                >
+                  <option value="TASK">Task</option>
+                  <option value="BUG">Bug</option>
+                  <option value="FEATURE">Feature</option>
+                  <option value="IMPROVEMENT">Improvement</option>
+                </select>
+                <select
+                  value={subticketForm.priority}
+                  onChange={(e) => setSubticketForm({ ...subticketForm, priority: e.target.value })}
+                >
+                  <option value="LOW">Low Priority</option>
+                  <option value="MEDIUM">Medium Priority</option>
+                  <option value="HIGH">High Priority</option>
+                  <option value="CRITICAL">Critical Priority</option>
+                </select>
+              </div>
+              <select
+                value={subticketForm.assigneeId}
+                onChange={(e) => setSubticketForm({ ...subticketForm, assigneeId: e.target.value })}
+              >
+                <option value="">Unassigned</option>
+                {projectMembers.map((member) => (
+                  <option key={member.id} value={member.id}>
+                    {member.username}
+                  </option>
+                ))}
+              </select>
+              <div className="modal-buttons">
+                <button type="submit" disabled={creatingSubticket}>
+                  {creatingSubticket ? 'Creating...' : 'Create Subticket'}
+                </button>
+                <button 
+                  type="button" 
+                  onClick={() => setShowCreateSubticket(false)}
+                  disabled={creatingSubticket}
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Move to Parent Modal */}
+      {showMoveToParent && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <h3>{ticket.parentTicket ? 'Change Parent Ticket' : 'Move to Parent Ticket'}</h3>
+            <form onSubmit={handleMoveToParent}>
+              <select
+                value={selectedParentId}
+                onChange={(e) => setSelectedParentId(e.target.value)}
+                required
+              >
+                <option value="">Remove parent (make independent)</option>
+                {availableTickets.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.title} ({t.type} - {t.status})
+                  </option>
+                ))}
+              </select>
+              <div className="modal-buttons">
+                <button type="submit">
+                  {ticket.parentTicket ? 'Change Parent' : 'Move to Parent'}
+                </button>
+                <button 
+                  type="button" 
+                  onClick={() => setShowMoveToParent(false)}
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
