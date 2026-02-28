@@ -15,7 +15,9 @@ export default function CreateTicketModal({
     setCreateError,
     loadStoryData,
     projectMembers = [],
-    project
+    project,
+    stories = [],
+    sprints = []
 }) {
     const [showMentionDropdown, setShowMentionDropdown] = useState(false);
     const [mentionSearch, setMentionSearch] = useState('');
@@ -23,15 +25,27 @@ export default function CreateTicketModal({
     const [selectedMentionIndex, setSelectedMentionIndex] = useState(0);
     const descriptionTextareaRef = React.useRef(null);
     
-    // Set default assignee when modal opens if configured and assignee is a project member
+    // Set default assignee and storyId when modal opens
     useEffect(() => {
+        const updates = {};
+        
+        // Set default assignee if configured and assignee is a project member
         if (project?.defaultAssigneeId && !createForm.assigneeId) {
             const defaultAssignee = projectMembers.find(m => m.id === project.defaultAssigneeId);
             if (defaultAssignee) {
-                setCreateForm(prev => ({ ...prev, assigneeId: project.defaultAssigneeId }));
+                updates.assigneeId = project.defaultAssigneeId;
             }
         }
-    }, [project, projectMembers]);
+        
+        // Set storyId from prop if provided and not already set
+        if (storyId && !createForm.storyId) {
+            updates.storyId = storyId;
+        }
+        
+        if (Object.keys(updates).length > 0) {
+            setCreateForm(prev => ({ ...prev, ...updates }));
+        }
+    }, [project, projectMembers, storyId]);
 
     const handleDescriptionChange = (e) => {
         const value = e.target.value;
@@ -118,11 +132,13 @@ export default function CreateTicketModal({
                             createForm.description,
                             createForm.type,
                             createForm.priority,
-                            storyId,
-                            createForm.assigneeId || null
+                            createForm.storyId || null,
+                            createForm.assigneeId || null,
+                            createForm.sprintId || null,
+                            null // parentTicketId
                         );
                         setShowCreateModal(false);
-                        setCreateForm({ title: '', description: '', type: 'TASK', priority: 'MEDIUM', assigneeId: '' });
+                        setCreateForm({ title: '', description: '', type: 'TASK', priority: 'MEDIUM', assigneeId: '', storyId: '', sprintId: '' });
                         loadStoryData();
                     } catch (err) {
                         console.error('Error creating ticket:', err);
@@ -180,6 +196,32 @@ export default function CreateTicketModal({
                                     <option value="LOW">Low</option>
                                 </select>
                             </div>
+                        </div>
+                        <div className="form-group">
+                            <label>Story</label>
+                            <select
+                                className="form-control"
+                                value={createForm.storyId || ''}
+                                onChange={(e) => setCreateForm({ ...createForm, storyId: e.target.value })}
+                            >
+                                <option value="">No Story</option>
+                                {stories.map(story => (
+                                    <option key={story.id} value={story.id}>{story.title}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className="form-group">
+                            <label>Sprint</label>
+                            <select
+                                className="form-control"
+                                value={createForm.sprintId || ''}
+                                onChange={(e) => setCreateForm({ ...createForm, sprintId: e.target.value })}
+                            >
+                                <option value="">No Sprint</option>
+                                {sprints.map(sprint => (
+                                    <option key={sprint.id} value={sprint.id}>{sprint.name}</option>
+                                ))}
+                            </select>
                         </div>
                         <div className="form-group">
                             <label>Assignee</label>
