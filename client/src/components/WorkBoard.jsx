@@ -288,7 +288,7 @@ const WorkBoard = () => {
         await authService.updateTicket(response.id, { sprintId: ticketForm.sprintId });
       }
       
-      setTicketForm({ title: '', description: '', type: 'TASK', priority: 'MEDIUM', storyId: '', sprintId: '' });
+      setTicketForm({ title: '', description: '', type: 'TASK', priority: 'MEDIUM', storyId: '', assigneeId: '', sprintId: '' });
       setShowCreateTicket(false);
       loadProjectAndWorkItems();
     } catch (error) {
@@ -571,6 +571,8 @@ const WorkBoard = () => {
           loadStoryData={loadProjectAndWorkItems}
           projectMembers={teamMembers}
           project={selectedProject}
+          stories={stories}
+          sprints={sprints}
         />
       )}
 

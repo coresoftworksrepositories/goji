@@ -12,6 +12,7 @@ const StoryView = () => {
   const [tickets, setTickets] = useState([]);
   const [projectMembers, setProjectMembers] = useState([]);
   const [sprints, setSprints] = useState([]);
+  const [stories, setStories] = useState([]);
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
@@ -27,7 +28,9 @@ const StoryView = () => {
     description: '',
     type: 'TASK',
     priority: 'MEDIUM',
-    assigneeId: ''
+    assigneeId: '',
+    storyId: '',
+    sprintId: ''
   });
   const [createLoading, setCreateLoading] = useState(false);
   const [createError, setCreateError] = useState(null);
@@ -50,12 +53,13 @@ const StoryView = () => {
   const loadStoryData = async () => {
     try {
       setLoading(true);
-      const [storyData, ticketsData, membersData, sprintsData, projectData] = await Promise.all([
+      const [storyData, ticketsData, membersData, sprintsData, projectData, storiesData] = await Promise.all([
         authService.getStory(storyId),
         authService.getStoryTickets(storyId),
         authService.getProjectMembers(projectId),
         authService.getProjectSprints(projectId),
-        authService.getProject(projectId)
+        authService.getProject(projectId),
+        authService.getProjectStories(projectId)
       ]);
       
       setStory(storyData);
@@ -63,6 +67,7 @@ const StoryView = () => {
       setProjectMembers(membersData);
       setSprints(sprintsData);
       setProject(projectData);
+      setStories(storiesData);
       setEditForm({
         title: storyData.title,
         description: storyData.description || '',
@@ -454,6 +459,8 @@ const StoryView = () => {
           loadStoryData={loadStoryData}
           projectMembers={projectMembers}
           project={project}
+          stories={stories}
+          sprints={sprints}
         />
         
       )}
