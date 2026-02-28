@@ -1,0 +1,257 @@
+
+.list-view {
+  width: 95%;
+  padding: 20px;
+}
+
+.list-view-table {
+  width: 100%;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: 30px;
+}
+
+.list-view-table h3 {
+  padding: 16px 20px;
+  margin: 0;
+  background: #000;
+  border-bottom: 2px solid #e9ecef;
+  font-size: 18px;
+  font-weight: 600;
+  color: #FFF;
+}
+
+.table-header {
+display: grid;
+    grid-template-columns: 3fr 1.5fr 1.5fr 1.5fr 1fr 1fr 1fr;
+    padding: 12px 20px;
+    background: #848485;
+    border-bottom: 2px solid #dee2e6;
+    font-weight: 600;
+    font-size: 13px;
+    color: #000000;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.table-row {
+  display: grid;
+  grid-template-columns: 3fr 1.5fr 1.5fr 1.5fr 1fr 1fr 1fr;
+  padding: 12px 20px;
+  border-bottom: 1px solid #e9ecef;
+  align-items: center;
+  transition: background-color 0.15s ease;
+  cursor: pointer;
+}
+
+.table-row:hover {
+  background: #f8f9fa;
+}
+
+.table-row:last-child {
+  border-bottom: none;
+}
+
+.table-cell {
+  padding: 4px 8px;
+  font-size: 14px;
+  color: #333;
+}
+
+.table-cell.item-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+
+.table-cell.item-title .type-icon {
+  display: flex;
+  align-items: center;
+  font-size: 16px;
+}
+
+.table-cell .subticket-indicator {
+  color: #6c757d;
+  font-size: 16px;
+  margin-right: 4px;
+}
+
+.table-cell-select {
+  width: 100%;
+  padding: 6px 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: white;
+  font-size: 13px;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.table-cell-select:hover {
+  border-color: #0073ea;
+  background: #f8f9fa;
+}
+
+.table-cell-select:focus {
+  outline: none;
+  border-color: #0073ea;
+  box-shadow: 0 0 0 3px rgba(0, 115, 234, 0.1);
+}
+
+.table-cell-select:disabled {
+  background: #f5f5f5;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  text-align: center;
+  text-transform: capitalize;
+  display: inline-block;
+}
+
+.status-badge.BACKLOG,
+.status-badge.OPEN {
+  background: #e9ecef;
+  color: #495057;
+}
+
+.status-badge.IN_PROGRESS {
+  background: #cfe2ff;
+  color: #084298;
+}
+
+.status-badge.IN_REVIEW {
+  background: #fff3cd;
+  color: #997404;
+}
+
+.status-badge.DONE,
+.status-badge.RESOLVED {
+  background: #d1e7dd;
+  color: #0f5132;
+}
+
+.status-badge.CLOSED {
+  background: #cff4fc;
+  color: #055160;
+}
+
+.priority-badge {
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  text-align: center;
+  color: white;
+  display: inline-block;
+}
+
+.priority-badge.CRITICAL {
+  background: #dc3545;
+}
+
+.priority-badge.HIGH {
+  background: #fd7e14;
+}
+
+.priority-badge.MEDIUM {
+  background: #ffc107;
+  color: #333;
+}
+
+.priority-badge.LOW {
+  background: #28a745;
+}
+
+.assignee-display {
+  padding: 4px 12px;
+  background: #e7f3ff;
+  border-radius: 4px;
+  font-size: 13px;
+  color: #0073ea;
+  font-weight: 500;
+  display: inline-block;
+}
+
+.assignee-none {
+  color: #999;
+  font-style: italic;
+  font-size: 13px;
+}
+
+.sprint-display {
+  font-size: 13px;
+  color: #000;
+}
+
+.sprint-none {
+  color: #999;
+  font-style: italic;
+}
+
+.points-display {
+  font-size: 13px;
+  font-weight: 600;
+  color: #0073ea;
+}
+
+.date-display {
+  font-size: 13px;
+  color: #666;
+}
+
+.table-cell.clickable-title:hover {
+  color: #0073ea;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1400px) {
+  .table-header,
+  .table-row {
+    grid-template-columns: 2.5fr 1.5fr 1.5fr 1.5fr 1fr 1fr;
+  }
+  
+  .table-cell:last-child {
+    display: none;
+  }
+}
+
+@media (max-width: 1200px) {
+  .table-header,
+  .table-row {
+    grid-template-columns: 2fr 1.5fr 1.5fr 1fr 1fr;
+  }
+  
+  .table-cell:nth-child(6),
+  .table-cell:nth-child(7) {
+    display: none;
+  }
+}
+
+/* Empty state */
+.table-empty {
+  padding: 40px 20px;
+  text-align: center;
+  color: #999;
+  font-style: italic;
+}
+
+/* Type badge */
+.type-badge {
+  padding: 4px 10px;
+  background: #f0f0f0;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  color: #666;
+}

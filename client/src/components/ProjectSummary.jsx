@@ -355,7 +355,7 @@ const ProjectSummary = () => {
                   <Cell key={`cell-${index}`} fill={entry.color} />
                 ))}
               </Pie>
-              <Tooltip />
+              <Tooltip contentStyle={{ backgroundColor: '#000', border: '1px solid #ccc' }} itemStyle={{ color: '#fff' }} labelStyle={{ color: '#fff' }} />
               <Legend />
             </PieChart>
           </ResponsiveContainer>
@@ -380,7 +380,7 @@ const ProjectSummary = () => {
                   <Cell key={`cell-${index}`} fill={entry.color} />
                 ))}
               </Pie>
-              <Tooltip />
+              <Tooltip contentStyle={{ backgroundColor: '#000', border: '1px solid #ccc' }} itemStyle={{ color: '#fff' }} labelStyle={{ color: '#fff' }} />
               <Legend />
             </PieChart>
           </ResponsiveContainer>
@@ -394,7 +394,7 @@ const ProjectSummary = () => {
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" />
               <YAxis />
-              <Tooltip />
+              <Tooltip contentStyle={{ backgroundColor: '#000', border: '1px solid #ccc' }} itemStyle={{ color: '#fff' }} labelStyle={{ color: '#fff' }} />
               <Bar dataKey="value" fill="#8884d8">
                 {priorityData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color} />
@@ -423,7 +423,7 @@ const ProjectSummary = () => {
                   <Cell key={`cell-${index}`} fill={entry.color} />
                 ))}
               </Pie>
-              <Tooltip />
+              <Tooltip contentStyle={{ backgroundColor: '#000', border: '1px solid #ccc' }} itemStyle={{ color: '#fff' }} labelStyle={{ color: '#fff' }} />
               <Legend />
             </PieChart>
           </ResponsiveContainer>
@@ -438,7 +438,7 @@ const ProjectSummary = () => {
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
                 <YAxis />
-                <Tooltip />
+                <Tooltip contentStyle={{ backgroundColor: '#000', border: '1px solid #ccc' }} itemStyle={{ color: '#fff' }} labelStyle={{ color: '#fff' }} />
                 <Legend />
                 <Bar dataKey="stories" fill="#8884d8" name="Total Stories" />
                 <Bar dataKey="completedStories" fill="#82ca9d" name="Completed Stories" />
@@ -458,7 +458,7 @@ const ProjectSummary = () => {
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
                 <YAxis />
-                <Tooltip />
+                <Tooltip contentStyle={{ backgroundColor: '#000', border: '1px solid #ccc' }} itemStyle={{ color: '#fff' }} labelStyle={{ color: '#fff' }} />
                 <Legend />
                 <Bar dataKey="stories" fill="#8884d8" name="Stories" />
                 <Bar dataKey="tickets" fill="#82ca9d" name="Tickets" />
@@ -477,7 +477,7 @@ const ProjectSummary = () => {
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="points" />
                 <YAxis />
-                <Tooltip />
+                <Tooltip contentStyle={{ backgroundColor: '#000', border: '1px solid #ccc' }} itemStyle={{ color: '#fff' }} labelStyle={{ color: '#fff' }} />
                 <Bar dataKey="count" fill="#8884d8" />
               </BarChart>
             </ResponsiveContainer>
@@ -493,7 +493,7 @@ const ProjectSummary = () => {
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="sprintName" />
                 <YAxis />
-                <Tooltip />
+                <Tooltip contentStyle={{ backgroundColor: '#000', border: '1px solid #ccc' }} itemStyle={{ color: '#fff' }} labelStyle={{ color: '#fff' }} />
                 <Legend />
                 <Line type="monotone" dataKey="velocity" stroke="#8884d8" strokeWidth={3} name="Story Points" />
                 <Line type="monotone" dataKey="storiesCompleted" stroke="#82ca9d" strokeWidth={2} name="Stories Completed" />
@@ -511,7 +511,7 @@ const ProjectSummary = () => {
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="date" />
                 <YAxis />
-                <Tooltip />
+                <Tooltip contentStyle={{ backgroundColor: '#000', border: '1px solid #ccc' }} itemStyle={{ color: '#fff' }} labelStyle={{ color: '#fff' }} />
                 <Legend />
                 <Area type="monotone" dataKey="remaining" stackId="1" stroke="#dc3545" fill="#dc3545" fillOpacity={0.6} name="Remaining Work" />
                 <Area type="monotone" dataKey="completed" stackId="2" stroke="#28a745" fill="#28a745" fillOpacity={0.6} name="Completed Work" />
@@ -541,7 +541,7 @@ const ProjectSummary = () => {
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
-                  <Tooltip />
+                  <Tooltip contentStyle={{ backgroundColor: '#000', border: '1px solid #ccc' }} itemStyle={{ color: '#fff' }} labelStyle={{ color: '#fff' }} />
                   <Legend />
                 </PieChart>
               </ResponsiveContainer>
@@ -565,7 +565,7 @@ const ProjectSummary = () => {
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
-                  <Tooltip />
+                  <Tooltip contentStyle={{ backgroundColor: '#000', border: '1px solid #ccc' }} itemStyle={{ color: '#fff' }} labelStyle={{ color: '#fff' }} />
                   <Legend />
                 </PieChart>
               </ResponsiveContainer>

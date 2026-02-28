@@ -410,7 +410,6 @@
 
 /* Mention Dropdown Styles */
 .mention-dropdown {
-  position: absolute;
   bottom: 100%;
   left: 1rem;
   right: 1rem;

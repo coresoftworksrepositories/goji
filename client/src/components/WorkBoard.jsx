@@ -8,6 +8,7 @@ import ProjectSummary from './ProjectSummary';
 import { TriangleAlert } from 'lucide-react';
 import CreateTicketModal from './CreateTicketModal';
 import CreateStoryModal from './CreateStoryModal';
+import '../styles/list-view.css';
 const DraggableStoryItem = ({ story, onStatusChange, navigate, teamId, projectId, onContextMenu, getPriorityColor, sprints, selectedSprint, storyColumns }) => {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: 'STORY',
@@ -325,6 +326,50 @@ const WorkBoard = () => {
     }
   };
 
+  const handleStoryAssigneeChange = async (storyId, assigneeId) => {
+    try {
+      await authService.updateStory(storyId, { 
+        assigneeId: assigneeId || null 
+      });
+      loadProjectAndWorkItems();
+    } catch (error) {
+      setError('Failed to update story assignee');
+    }
+  };
+
+  const handleTicketAssigneeChange = async (ticketId, assigneeId) => {
+    try {
+      await authService.updateTicket(ticketId, { 
+        assigneeId: assigneeId || null 
+      });
+      loadProjectAndWorkItems();
+    } catch (error) {
+      setError('Failed to update ticket assignee');
+    }
+  };
+
+  const handleStorySprintChange = async (storyId, sprintId) => {
+    try {
+      await authService.updateStory(storyId, { 
+        sprintId: sprintId || null 
+      });
+      loadProjectAndWorkItems();
+    } catch (error) {
+      setError('Failed to update story sprint');
+    }
+  };
+
+  const handleTicketSprintChange = async (ticketId, sprintId) => {
+    try {
+      await authService.updateTicket(ticketId, { 
+        sprintId: sprintId || null 
+      });
+      loadProjectAndWorkItems();
+    } catch (error) {
+      setError('Failed to update ticket sprint');
+    }
+  };
+
   const handleStoryContextMenu = (e, story) => {
     e.preventDefault();
     setContextMenu({ visible: true, x: e.clientX, y: e.clientY, type: 'story', item: story });
@@ -618,60 +663,168 @@ const WorkBoard = () => {
         <ProjectSummary />
       ) : (
         <div className="list-view">
-          <div className="list-section">
+          {/* Stories Table */}
+          <div className="list-view-table">
             <h3>Stories ({getFilteredStories().length})</h3>
-            <div className="items-list">
-              {getFilteredStories().map((story) => (
-                <div key={story.id} className="list-item" onContextMenu={(e) => handleStoryContextMenu(e, story)}>
-                  <div className="item-info">
-                    <h4>{story.title}</h4>
-                    <p>{story.description}</p>
-                    <div className="item-meta">
-                      <span className="status">{story.status}</span>
-                      <span className="priority" style={{ color: getPriorityColor(story.priority) }}>
-                        {story.priority}
-                      </span>
-                      {story.points && <span className="points">{story.points} pts</span>}
-                      {story.sprintId && (
-                        <span className="sprint">
-                          Sprint: {sprints.find(s => s.id === story.sprintId)?.name || 'Unknown'}
-                        </span>
-                      )}
-                    </div>
+            <div className="table-header">
+              <div className="table-cell">Item</div>
+              <div className="table-cell">Assignee</div>
+              <div className="table-cell">Sprint</div>
+              <div className="table-cell">Status</div>
+              <div className="table-cell">Priority</div>
+              <div className="table-cell">Points</div>
+              <div className="table-cell">Created</div>
+            </div>
+            {getFilteredStories().length === 0 ? (
+              <div className="table-empty">No stories found</div>
+            ) : (
+              getFilteredStories().map((story) => (
+                <div 
+                  key={story.id} 
+                  className="table-row"
+                  onContextMenu={(e) => handleStoryContextMenu(e, story)}
+                >
+                  <div 
+                    className="table-cell item-title clickable-title"
+                    onClick={() => navigate(`/teams/${teamId}/projects/${projectId}/stories/${story.id}`)}
+                  >
+                    {story.title}
+                  </div>
+                  <div className="table-cell" onClick={(e) => e.stopPropagation()}>
+                    <select
+                      className="table-cell-select"
+                      value={story.assigneeId || ''}
+                      onChange={(e) => handleStoryAssigneeChange(story.id, e.target.value)}
+                    >
+                      <option value="">Unassigned</option>
+                      {teamMembers.map((member) => (
+                        <option key={member.id} value={member.id}>
+                          {member.username}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="table-cell" onClick={(e) => e.stopPropagation()}>
+                    <select
+                      className="table-cell-select"
+                      value={story.sprintId || ''}
+                      onChange={(e) => handleStorySprintChange(story.id, e.target.value)}
+                    >
+                      <option value="">No Sprint</option>
+                      {sprints.map((sprint) => (
+                        <option key={sprint.id} value={sprint.id}>
+                          {sprint.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="table-cell">
+                    <span className={`status-badge ${story.status}`}>
+                      {story.status.replace('_', ' ')}
+                    </span>
+                  </div>
+                  <div className="table-cell">
+                    <span className={`priority-badge ${story.priority}`}>
+                      {story.priority}
+                    </span>
+                  </div>
+                  <div className="table-cell">
+                    {story.points ? (
+                      <span className="points-display">{story.points}</span>
+                    ) : (
+                      <span className="sprint-none">-</span>
+                    )}
+                  </div>
+                  <div className="table-cell">
+                    <span className="date-display">
+                      {story.createdAt ? new Date(story.createdAt).toLocaleDateString() : '-'}
+                    </span>
                   </div>
                 </div>
-              ))}
-            </div>
+              ))
+            )}
           </div>
 
-          <div className="list-section">
+          {/* Tickets Table */}
+          <div className="list-view-table">
             <h3>Tickets ({getFilteredTickets().length})</h3>
-            <div className="items-list">
-              {getFilteredTickets().map((ticket) => (
-                <div key={ticket.id} className="list-item" onContextMenu={(e) => handleTicketContextMenu(e, ticket)}>
-                  <div className="item-info">
-                    <h4>
-                      <span className="type-icon">{getTypeIcon(ticket.type)}</span>
-                      {ticket.title}
-                    </h4>
-                    <p>{ticket.description}</p>
-                    <div className="item-meta">
-                      <span className="status">{ticket.status}</span>
-                      <span className="type">{ticket.type}</span>
-                      <span className="priority" style={{ color: getPriorityColor(ticket.priority) }}>
-                        {ticket.priority}
-                      </span>
-                      {ticket.story && <span className="story">Story: {ticket.story.title}</span>}
-                      {ticket.sprintId && (
-                        <span className="sprint">
-                          Sprint: {sprints.find(s => s.id === ticket.sprintId)?.name || 'Unknown'}
-                        </span>
-                      )}
-                    </div>
+            <div className="table-header">
+              <div className="table-cell">Item</div>
+              <div className="table-cell">Assignee</div>
+              <div className="table-cell">Story</div>
+              <div className="table-cell">Sprint</div>
+              <div className="table-cell">Status</div>
+              <div className="table-cell">Priority</div>
+              <div className="table-cell">Type</div>
+            </div>
+            {getFilteredTickets().length === 0 ? (
+              <div className="table-empty">No tickets found</div>
+            ) : (
+              getFilteredTickets().map((ticket) => (
+                <div 
+                  key={ticket.id} 
+                  className="table-row"
+                  onContextMenu={(e) => handleTicketContextMenu(e, ticket)}
+                >
+                  <div 
+                    className="table-cell item-title clickable-title"
+                    onClick={() => navigate(`/teams/${teamId}/projects/${projectId}/tickets/${ticket.id}`)}
+                  >
+                    {ticket.parentTicketId && <span className="subticket-indicator">↳</span>}
+                    <span className="type-icon">{getTypeIcon(ticket.type)}</span>
+                    {ticket.title}
+                  </div>
+                  <div className="table-cell" onClick={(e) => e.stopPropagation()}>
+                    <select
+                      className="table-cell-select"
+                      value={ticket.assigneeId || ''}
+                      onChange={(e) => handleTicketAssigneeChange(ticket.id, e.target.value)}
+                    >
+                      <option value="">Unassigned</option>
+                      {teamMembers.map((member) => (
+                        <option key={member.id} value={member.id}>
+                          {member.username}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="table-cell">
+                    {ticket.story ? (
+                      <span className="sprint-display">{ticket.story.title}</span>
+                    ) : (
+                      <span className="sprint-none">-</span>
+                    )}
+                  </div>
+                  <div className="table-cell" onClick={(e) => e.stopPropagation()}>
+                    <select
+                      className="table-cell-select"
+                      value={ticket.sprintId || ''}
+                      onChange={(e) => handleTicketSprintChange(ticket.id, e.target.value)}
+                    >
+                      <option value="">No Sprint</option>
+                      {sprints.map((sprint) => (
+                        <option key={sprint.id} value={sprint.id}>
+                          {sprint.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="table-cell">
+                    <span className={`status-badge ${ticket.status}`}>
+                      {ticket.status.replace('_', ' ')}
+                    </span>
+                  </div>
+                  <div className="table-cell">
+                    <span className={`priority-badge ${ticket.priority}`}>
+                      {ticket.priority}
+                    </span>
+                  </div>
+                  <div className="table-cell">
+                    <span className="type-badge">{ticket.type}</span>
                   </div>
                 </div>
-              ))}
-            </div>
+              ))
+            )}
           </div>
         </div>
       )}
