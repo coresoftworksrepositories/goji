@@ -70,6 +70,9 @@ const TicketView = () => {
       
       setTicket(ticketData);
       setProjectMembers(membersData);
+      console.log('TicketView - loaded projectMembers:', membersData);
+      console.log('TicketView - projectMembers is array?', Array.isArray(membersData));
+      console.log('TicketView - first member:', membersData?.[0]);
       setStories(storiesData);
       setSprints(sprintsData);
       setComments(commentsData);
@@ -691,11 +694,14 @@ const TicketView = () => {
                     </div>
                     <div className="input-group">
                       <label>Description</label>
+
                       <TextArea
                         value={editWorkLogForm.description}
                         onChange={(text) => setEditWorkLogForm({...editWorkLogForm, description: text})}
-                        placeholder="Describe the work done..."
+                        placeholder="Describe the work done... (Type @ to mention someone)"
                         showToolbar={false}
+                        showMentions={true}
+                        projectMembers={projectMembers}
                         disabled={updatingWorkLog}
                         minHeight="80px"
                         maxHeight="200px"
@@ -731,17 +737,17 @@ const TicketView = () => {
                     <div className="work-log-actions">
                       <button
                         onClick={() => handleEditWorkLog(workLog)}
-                        className="btn btn-xs btn-secondary"
+                        className="btn btn-xs btn-secondary pencil-line"
                         title="Edit work log"
                       >
-                        ✏️
+                        <PencilLine color="#ffffff" strokeWidth={1.25} />
                       </button>
                       <button
                         onClick={() => handleDeleteWorkLog(workLog.id)}
-                        className="btn btn-xs btn-danger"
+                        className="btn btn-xs btn-danger delete-worklog"
                         title="Delete work log"
                       >
-                        🗑️
+                        <Trash color="#ffffff" strokeWidth={1.25} />
                       </button>
                     </div>
                   </div>
@@ -773,8 +779,10 @@ const TicketView = () => {
             <TextArea
               value={newWorkLog.description}
               onChange={(text) => setNewWorkLog({...newWorkLog, description: text})}
-              placeholder="Describe the work done..."
+              placeholder="Describe the work done... (Type @ to mention someone)"
               showToolbar={false}
+              showMentions={true}
+              projectMembers={projectMembers}
               disabled={addingWorkLog}
               minHeight="80px"
               maxHeight="200px"
@@ -791,6 +799,8 @@ const TicketView = () => {
       </form>
     </div>
   );
+
+  document.title = `Goji - ${ticket.title}`;
 
   return (
     <div className="ticket-view-container">

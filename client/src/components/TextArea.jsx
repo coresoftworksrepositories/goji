@@ -26,6 +26,16 @@ export default function TextArea({
         }
     }, [value]);
 
+    useEffect(() => {
+        if (showMentions) {
+            console.log('TextArea - showMentions:', showMentions, 'projectMembers count:', projectMembers?.length || 0);
+        }
+    }, [showMentions, projectMembers]);
+
+    useEffect(() => {
+        console.log('Mention dropdown state changed:', showMentionDropdown, 'search:', mentionSearch);
+    }, [showMentionDropdown, mentionSearch]);
+
     const handleInput = (e) => {
         const text = e.target.innerText;
         if (onChange) {
@@ -33,26 +43,46 @@ export default function TextArea({
         }
 
         // Handle @ mentions if enabled
-        if (showMentions && projectMembers.length > 0) {
-            const selection = window.getSelection();
-            if (selection.rangeCount > 0) {
+        if (showMentions && projectMembers && projectMembers.length > 0) {
+            try {
+                const selection = window.getSelection();
+                if (!selection || selection.rangeCount === 0) {
+                    setShowMentionDropdown(false);
+                    return;
+                }
+                
                 const range = selection.getRangeAt(0);
-                const textBeforeCursor = range.startContainer.textContent?.substring(0, range.startOffset) || '';
+                
+                // Get all text before cursor
+                let textBeforeCursor = '';
+                if (range.startContainer.nodeType === Node.TEXT_NODE) {
+                    textBeforeCursor = range.startContainer.textContent?.substring(0, range.startOffset) || '';
+                } else {
+                    // If we're not in a text node, get the full text content
+                    textBeforeCursor = e.target.innerText;
+                }
+                
                 const lastAtIndex = textBeforeCursor.lastIndexOf('@');
                 
                 if (lastAtIndex !== -1) {
                     const textAfterAt = textBeforeCursor.substring(lastAtIndex + 1);
-                    if (!textAfterAt.includes(' ')) {
+                    // Check if there's no space or newline after @ and it's at the end
+                    if (!textAfterAt.includes(' ') && !textAfterAt.includes('\n')) {
                         setShowMentionDropdown(true);
                         setMentionSearch(textAfterAt.toLowerCase());
                         setMentionStartPos(lastAtIndex);
                         setSelectedMentionIndex(0);
+                        console.log('Showing mention dropdown, search:', textAfterAt);
                         return;
                     }
                 }
+                
+                setShowMentionDropdown(false);
+                setMentionSearch('');
+            } catch (error) {
+                console.error('Error in mention detection:', error);
+                setShowMentionDropdown(false);
             }
-            setShowMentionDropdown(false);
-            setMentionSearch('');
         }
     };
 
@@ -386,27 +416,40 @@ export default function TextArea({
                     suppressContentEditableWarning
                 />
 
-                {showMentionDropdown && showMentions && (
+                {showMentionDropdown && showMentions && projectMembers && projectMembers.length > 0 && (
                     <div className="mention-dropdown">
-                        {projectMembers
-                            .filter(member => member.username.toLowerCase().includes(mentionSearch))
-                            .map((member, index) => (
-                                <div
-                                    key={member.id}
-                                    className={`mention-item ${index === selectedMentionIndex ? 'selected' : ''}`}
-                                    onMouseDown={(e) => {
-                                        e.preventDefault();
-                                        selectMention(member);
-                                    }}
-                                    onMouseEnter={() => setSelectedMentionIndex(index)}
-                                >
-                                    <span className="mention-username">@{member.username}</span>
-                                    {member.email && <span className="mention-email">{member.email}</span>}
-                                </div>
-                            ))}
-                        {projectMembers.filter(member => member.username.toLowerCase().includes(mentionSearch)).length === 0 && (
-                            <div className="mention-item mention-no-results">No users found</div>
-                        )}
+                        <div className="mention-dropdown-header">
+                            Mention a team member
+                        </div>
+                        {(() => {
+                            const filtered = projectMembers.filter(member => 
+                                member.username.toLowerCase().includes(mentionSearch)
+                            );
+                            return filtered.length > 0 ? (
+                                filtered.map((member, index) => (
+                                    <div
+                                        key={member.id}
+                                        className={`mention-item ${index === selectedMentionIndex ? 'selected' : ''}`}
+                                        onMouseDown={(e) => {
+                                            e.preventDefault();
+                                            console.log('Selected member:', member.username);
+                                            selectMention(member);
+                                        }}
+                                        onMouseEnter={() => setSelectedMentionIndex(index)}
+                                    >
+                                        <div className="mention-username">@{member.username}</div>
+                                        {(member.firstName || member.lastName) && (
+                                            <div className="mention-fullname">
+                                                {member.firstName} {member.lastName}
+                                            </div>
+                                        )}
+                                        {member.email && <div className="mention-email">{member.email}</div>}
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="mention-item mention-no-results">No users found</div>
+                            );
+                        })()}
                     </div>
                 )}
             </div>

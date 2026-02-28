@@ -4,7 +4,9 @@
   max-width: 1400px;
   margin: 0 auto;
 }
-
+li.recharts-tooltip-item {
+    color: #FFF!important;
+}
 .summary-header {
   display: flex;
   justify-content: space-between;
@@ -190,6 +192,7 @@
   border-radius: 4px;
   transition: width 0.3s ease;
 }
+
 
 /* Responsive Design */
 @media (max-width: 768px) {
