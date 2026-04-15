@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { authService } from '../services/auth';
-import { ClipboardIcon } from '@radix-ui/react-icons';
+import { ClipboardIcon, RocketIcon, LightningBoltIcon, Crosshair2Icon } from '@radix-ui/react-icons';
 import {Trash, PencilLine} from 'lucide-react';
 import TextArea from './TextArea';
 
@@ -473,9 +473,9 @@ const TicketView = () => {
 
   const getTypeIcon = (type) => {
     switch (type) {
-      case 'BUG': return '🐛';
-      case 'FEATURE': return '✨';
-      case 'IMPROVEMENT': return '⚡';
+      case 'BUG': return <Crosshair2Icon />;
+      case 'FEATURE': return <RocketIcon />;
+      case 'IMPROVEMENT': return <LightningBoltIcon />;
       case 'TASK': return <ClipboardIcon />;
       default: return <ClipboardIcon />;
     }

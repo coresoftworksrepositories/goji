@@ -2,7 +2,7 @@
 
 ## Overview
 
-Goji is a JIRA-like project management application built with Node.js, Express.js, and Prisma ORM. The server follows a modular architecture pattern with clear separation of concerns between routes, controllers, middleware, and utilities.
+Goji is a ticket project management application built with Node.js, Express.js, and Prisma ORM. The server follows a modular architecture pattern with clear separation of concerns between routes, controllers, middleware, and utilities.
 
 ## Architecture Overview
 
