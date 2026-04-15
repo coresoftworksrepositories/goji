@@ -1,18 +1,29 @@
 Backend Endpoints Added:
+
 PATCH /api/auth/profile - Update user profile
+
 PATCH /api/projects/:projectId - Update project details
+
 DELETE /api/projects/:projectId - Delete project
+
 GET /api/projects/:projectId/members - Get project members
+
 POST /api/projects/:projectId/members - Add project member
+
 DELETE /api/projects/:projectId/members/:userId - Remove project member
+
 GET /api/teams/:teamId/members - Get team members
+
 Styling Enhancements:
+
 Settings Pages Styling: Comprehensive CSS for forms, toggles, and layouts
+
 Theme Support: Dark/light mode compatibility
+
 Mobile Responsive: Settings pages work on all screen sizes
+
 Modern UI: Toggle switches, danger zones, and professional layouts
-🚀 Ready to Test:
-The JIRA competitor now has complete React Router navigation with:
+
 
 Direct URL Access:
 
