@@ -442,6 +442,19 @@ export const authService = {
   async getTeamAiSettings(teamId) {
     const response = await api.get(`/api/teams/${teamId}/ai-settings`);
     return response.data;
+  },
+
+  // System backup methods (superuser only)
+  async exportSystemBackup() {
+    const response = await api.get('/api/backup/export', {
+      responseType: 'blob'
+    });
+    return response.data;
+  },
+
+  async importSystemBackup(backupPayload) {
+    const response = await api.post('/api/backup/import', backupPayload);
+    return response.data;
   }
 };
 

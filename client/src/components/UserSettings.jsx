@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { authService } from '../services/auth';
+import BackupView from './BackupView';
 
 const UserSettings = ({ user, onUserUpdate }) => {
   const [formData, setFormData] = useState({
@@ -219,6 +220,8 @@ const UserSettings = ({ user, onUserUpdate }) => {
             </span>
           </div>
         </div>
+
+        <BackupView user={user} />
 
         <div className="settings-section danger-zone">
           <h3>Danger Zone</h3>

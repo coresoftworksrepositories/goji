@@ -52,6 +52,7 @@ model Team {
   members  TeamMember[]
   invites  TeamInvite[]
   projects Project[]
+  emailSettings EmailSettings?
 
   @@map("teams")
 }
@@ -228,4 +229,39 @@ enum Priority {
   MEDIUM
   HIGH
   CRITICAL
+}
+
+model EmailSettings {
+  id                    Int       @id @default(autoincrement())
+  teamId                Int       @unique
+  team                  Team      @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  
+  // Email service configuration (encrypted)
+  smtpHost              String
+  smtpPort              Int
+  smtpUser              String
+  smtpPassword          String   
+  fromEmail             String
+  fromName              String?
+  
+  // Reminder settings
+  enableTicketReminders  Boolean   @default(true)
+  enableStoryReminders   Boolean   @default(true)
+  reminderFrequencyDays  Int       @default(1)  // Send reminders every X days
+  
+  // Days before due date to send reminders
+  ticketReminderDaysBefore Int    @default(1)
+  storyReminderDaysBefore  Int    @default(1)
+  
+  // Time of day to send reminders (24-hour format, e.g., "09:00")
+  reminderTime          String    @default("09:00")
+  
+  // Last reminder sent timestamps for tracking
+  lastTicketReminderSent DateTime?
+  lastStoryReminderSent  DateTime?
+  
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@map("email_settings")
 }
