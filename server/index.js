@@ -15,6 +15,8 @@ const sprintsRoutes = require('./routes/sprintsRoutes');
 const searchRoutes = require('./routes/searchRoutes');
 const workLogsRoutes = require('./routes/workLogsRoutes');
 const usersRoutes = require('./routes/usersRoutes');
+const backupRoutes = require('./routes/backupRoutes');
+const emailSettingsRoutes = require('./routes/emailSettingsRoutes');
 
 // Load environment variables
 dotenv.config();
@@ -27,7 +29,7 @@ app.use(cors({
   origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
   credentials: true
 }));
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
 
 // Routes
 app.get('/api/health', (req, res) => {
@@ -44,6 +46,8 @@ app.use('/api/sprints', sprintsRoutes);
 app.use('/api/search', searchRoutes);
 app.use('/api/worklogs', workLogsRoutes);
 app.use('/api/users', usersRoutes);
+app.use('/api/backup', backupRoutes);
+app.use('/api/email-settings', emailSettingsRoutes);
 app.use('/api', aiSupportedRoutes);
 
 

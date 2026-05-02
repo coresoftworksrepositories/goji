@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { authService } from '../services/auth';
-import { ClipboardIcon } from '@radix-ui/react-icons';
+import { ClipboardIcon, RocketIcon, LightningBoltIcon, Crosshair2Icon } from '@radix-ui/react-icons';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import ProjectSummary from './ProjectSummary';
@@ -419,11 +419,11 @@ const WorkBoard = () => {
 
   const getTypeIcon = (type) => {
     switch (type) {
-      case 'BUG': return '🐛';
-      case 'FEATURE': return '✨';
-      case 'IMPROVEMENT': return '⚡';
-      case 'TASK': return <ClipboardIcon />;
-      default: return <ClipboardIcon />;
+      case 'BUG': return <Crosshair2Icon />;
+           case 'FEATURE': return <RocketIcon />;
+           case 'IMPROVEMENT': return <LightningBoltIcon />;
+           case 'TASK': return <ClipboardIcon />;
+           default: return <ClipboardIcon />;
     }
   };
 

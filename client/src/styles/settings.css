@@ -359,6 +359,32 @@ body.dark-mode .settings-form select {
   font-style: italic;
 }
 
+/* Backup Settings */
+.backup-muted {
+  color: #aaa;
+  margin: 0 0 1rem 0;
+}
+
+.backup-actions {
+  margin-bottom: 1rem;
+}
+
+.backup-import {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.backup-file-label {
+  color: #fff;
+  font-weight: 500;
+}
+
+.backup-selected-file {
+  color: #9ecbff;
+  font-size: 0.9rem;
+}
+
 /* Toggle Switch */
 .toggle-switch {
   position: relative;
